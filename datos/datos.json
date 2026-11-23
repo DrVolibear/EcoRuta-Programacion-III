@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "sucursales": [
+    {
+      "codigo": "SJO-01",
+      "nombre": "San Jose Centro",
+      "provincia": "San Jose",
+      "capacidadKg": 5000,
+      "modalidades": [
+        "bicicleta",
+        "electrico",
+        "consolidado",
+        "aereo"
+      ],
+      "tarifaBase": 1800
+    },
+    {
+      "codigo": "ALA-01",
+      "nombre": "Alajuela Centro",
+      "provincia": "Alajuela",
+      "capacidadKg": 3500,
+      "modalidades": [
+        "bicicleta",
+        "electrico",
+        "consolidado",
+        "aereo"
+      ],
+      "tarifaBase": 1700
+    },
+    {
+      "codigo": "HER-01",
+      "nombre": "Heredia Centro",
+      "provincia": "Heredia",
+      "capacidadKg": 3000,
+      "modalidades": [
+        "bicicleta",
+        "electrico",
+        "consolidado"
+      ],
+      "tarifaBase": 1650
+    },
+    {
+      "codigo": "CAR-01",
+      "nombre": "Cartago Centro",
+      "provincia": "Cartago",
+      "capacidadKg": 3200,
+      "modalidades": [
+        "bicicleta",
+        "electrico",
+        "consolidado"
+      ],
+      "tarifaBase": 1650
+    },
+    {
+      "codigo": "LIM-01",
+      "nombre": "Limon Centro",
+      "provincia": "Limon",
+      "capacidadKg": 2800,
+      "modalidades": [
+        "electrico",
+        "consolidado",
+        "aereo"
+      ],
+      "tarifaBase": 2100
+    },
+    {
+      "codigo": "PUN-01",
+      "nombre": "Puntarenas Centro",
+      "provincia": "Puntarenas",
+      "capacidadKg": 2800,
+      "modalidades": [
+        "electrico",
+        "consolidado",
+        "aereo"
+      ],
+      "tarifaBase": 2100
+    },
+    {
+      "codigo": "CD-CEN",
+      "nombre": "Centro de Distribucion Central",
+      "provincia": "San Jose",
+      "capacidadKg": 12000,
+      "modalidades": [
+        "electrico",
+        "consolidado",
+        "aereo"
+      ],
+      "tarifaBase": 1500
+    }
+  ],
+  "distancias": {
+    "SJO-01": {
+      "ALA-01": 20,
+      "HER-01": 12,
+      "CAR-01": 25,
+      "LIM-01": 160,
+      "PUN-01": 100,
+      "CD-CEN": 8
+    },
+    "ALA-01": {
+      "SJO-01": 20,
+      "HER-01": 14,
+      "CAR-01": 45,
+      "LIM-01": 175,
+      "PUN-01": 90,
+      "CD-CEN": 24
+    },
+    "HER-01": {
+      "SJO-01": 12,
+      "ALA-01": 14,
+      "CAR-01": 35,
+      "LIM-01": 165,
+      "PUN-01": 105,
+      "CD-CEN": 15
+    },
+    "CAR-01": {
+      "SJO-01": 25,
+      "ALA-01": 45,
+      "HER-01": 35,
+      "LIM-01": 140,
+      "PUN-01": 125,
+      "CD-CEN": 20
+    },
+    "LIM-01": {
+      "SJO-01": 160,
+      "ALA-01": 175,
+      "HER-01": 165,
+      "CAR-01": 140,
+      "PUN-01": 260,
+      "CD-CEN": 155
+    },
+    "PUN-01": {
+      "SJO-01": 100,
+      "ALA-01": 90,
+      "HER-01": 105,
+      "CAR-01": 125,
+      "LIM-01": 260,
+      "CD-CEN": 95
+    },
+    "CD-CEN": {
+      "SJO-01": 8,
+      "ALA-01": 24,
+      "HER-01": 15,
+      "CAR-01": 20,
+      "LIM-01": 155,
+      "PUN-01": 95
+    }
+  },
+  "modalidades": [
+    {
+      "codigo": "bicicleta",
+      "nombre": "Bicicleta de carga",
+      "factorEmision": 0.005,
+      "capacidadKg": 40,
+      "maxDistanciaKm": 30,
+      "velocidadKmH": 18,
+      "bajaEmision": true,
+      "refrigerada": false,
+      "factorTarifa": 0.75
+    },
+    {
+      "codigo": "electrico",
+      "nombre": "Furgon electrico",
+      "factorEmision": 0.035,
+      "capacidadKg": 800,
+      "maxDistanciaKm": 220,
+      "velocidadKmH": 55,
+      "bajaEmision": true,
+      "refrigerada": true,
+      "factorTarifa": 1.0
+    },
+    {
+      "codigo": "consolidado",
+      "nombre": "Camion consolidado",
+      "factorEmision": 0.09,
+      "capacidadKg": 5000,
+      "maxDistanciaKm": 500,
+      "velocidadKmH": 50,
+      "bajaEmision": false,
+      "refrigerada": true,
+      "factorTarifa": 0.9
+    },
+    {
+      "codigo": "aereo",
+      "nombre": "Carga aerea",
+      "factorEmision": 0.55,
+      "capacidadKg": 1500,
+      "minDistanciaKm": 120,
+      "maxDistanciaKm": 1000,
+      "velocidadKmH": 500,
+      "bajaEmision": false,
+      "refrigerada": true,
+      "factorTarifa": 2.2
+    }
+  ],
+  "tarifas": {
+    "porKg": 190,
+    "porKm": 32,
+    "descuentoEcologico": 0.1
+  },
+  "recargos": {
+    "urgente": 0.25,
+    "fragil": 0.12,
+    "frio": 0.18,
+    "sobredimension": 0.2
+  },
+  "reglas": {
+    "pesoMinKg": 0.1,
+    "pesoMaxKg": 500,
+    "dimensionMaxCm": 200,
+    "divisorVolumetrico": 5000,
+    "bicicletaPesoMaxKg": 25,
+    "bicicletaDistanciaMaxKm": 30,
+    "aereoDistanciaMinKm": 120
+  }
+}
