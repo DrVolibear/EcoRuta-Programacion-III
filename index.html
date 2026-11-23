@@ -1,20 +1,633 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EcoRuta | Logistica sostenible</title><link rel="stylesheet" href="css/estilos.css"><link rel="stylesheet" href="css/impresion.css" media="print"><script type="module" src="js/app.js"></script></head>
-<body><noscript><p class="alerta error">EcoRuta requiere JavaScript. Active JavaScript y recargue.</p></noscript>
-<div id="estadoCarga" class="pantalla-carga" role="status" aria-live="polite"><div><h1>EcoRuta</h1><p id="textoCarga">Cargando catalogo institucional...</p><button id="btnReintentar" hidden>Reintentar</button></div></div>
-<div id="aplicacion" class="aplicacion" hidden><aside class="lateral"><header class="marca"><span aria-hidden="true">♻</span><div><strong>EcoRuta</strong><small>Logistica sostenible</small></div></header><nav aria-label="Modulos"><button class="nav-btn activo" data-vista="panel">Panel</button><button class="nav-btn" data-vista="registro">Registro</button><button class="nav-btn" data-vista="clientes">Clientes</button><button class="nav-btn" data-vista="catalogo">Catalogo</button><button class="nav-btn" data-vista="rutas">Despacho</button><button class="nav-btn" data-vista="seguimiento">Seguimiento</button><button class="nav-btn" data-vista="inventario">Inventario</button><button class="nav-btn" data-vista="configuracion">Configuracion</button></nav></aside>
-<main><header class="superior"><button id="btnMenu" aria-label="Abrir menu">☰</button><div><small>Sistema interno</small><span id="tituloVista">Panel general</span></div><span class="insignia">Programacion III</span></header><div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
-<section id="panel" class="vista activa"><header><p class="sobrelinea">M8</p><h1>Panel de sostenibilidad</h1></header><article class="tarjeta filtros-envios"><label for="panelFechaDesde">Desde<input id="panelFechaDesde" type="date"></label><label for="panelFechaHasta">Hasta<input id="panelFechaHasta" type="date"></label><label for="panelSucursal">Sucursal<select id="panelSucursal"><option value="">Todas</option></select></label><button id="limpiarPanel" class="secundario">Limpiar panel</button></article><div class="kpis"><article><span>Envios</span><strong id="kpiEnvios">0</strong></article><article><span>Facturado</span><strong id="kpiFacturado">₡0</strong></article><article><span>Tarifa promedio</span><strong id="kpiPromedio">₡0</strong></article><article><span>Peso</span><strong id="kpiPeso">0 kg</strong></article><article><span>Emisiones</span><strong id="kpiEmisiones">0 kg</strong></article><article><span>Evitadas limpias</span><strong id="kpiEvitadasLimpias">0 kg</strong></article><article><span>Evitadas consolidadas</span><strong id="kpiEvitadasConsolidadas">0 kg</strong></article><article><span>Baja emision</span><strong id="kpiPorcentajeLimpio">0%</strong></article></div><div class="dos-columnas"><article class="tarjeta"><h2>Envios por sucursal</h2><div id="graficoSucursales" class="barras"></div></article><article class="tarjeta"><h2>Participacion por modalidad</h2><div id="graficoModalidades" class="barra-apilada" aria-label="Participacion por modalidad"></div><div id="leyendaModalidades"></div></article><article class="tarjeta"><h2>Cantidad por estado</h2><div id="resumenEstados"></div></article><article class="tarjeta"><h2>Ranking ambiental</h2><ol id="rankingSucursales"></ol></article></div></section>
-<section id="clientes" class="vista"><header><p class="sobrelinea">M2</p><h1>Gestion de clientes</h1></header><div class="dos-columnas"><article class="tarjeta"><h2 id="tituloCliente">Nuevo cliente</h2><form id="formCliente"><input id="clienteId" type="hidden"><label for="identificacion">Identificacion</label><input id="identificacion" required maxlength="20" pattern="[0-9-]{7,20}"><label for="nombre">Nombre</label><input id="nombre" required maxlength="80" autocomplete="name"><label for="telefono">Telefono</label><input id="telefono" required pattern="[0-9]{4}-[0-9]{4}" placeholder="8888-8888" autocomplete="tel"><label for="correo">Correo</label><input id="correo" type="email" required autocomplete="email"><label for="direccion">Direccion</label><input id="direccion" required autocomplete="street-address"><label for="codigoPostal">Codigo postal</label><input id="codigoPostal" required pattern="[0-9]{5}" maxlength="5" inputmode="numeric"><label for="provincia">Provincia</label><select id="provincia" required><option value="">Seleccione</option><option>San Jose</option><option>Alajuela</option><option>Cartago</option><option>Heredia</option><option>Guanacaste</option><option>Puntarenas</option><option>Limon</option></select><div class="acciones"><button>Guardar cliente</button><button id="cancelarCliente" type="button" class="secundario" hidden>Cancelar</button></div></form></article><article class="tarjeta"><h2>Clientes registrados</h2><label for="buscarCliente">Busqueda incremental</label><input id="buscarCliente" type="search" placeholder="Nombre, identificacion o correo"><div id="listaClientes"></div></article></div><dialog id="dialogoHistorialCliente"><article><header class="fila"><h2 id="tituloHistorialCliente">Historial</h2><button id="cerrarHistorialCliente" class="secundario">Cerrar</button></header><div id="contenidoHistorialCliente"></div></article></dialog></section>
-<section id="registro" class="vista"><header><p class="sobrelinea">M1 + M5</p><h1>Registro de solicitudes</h1></header><div class="dos-columnas"><article class="tarjeta"><form id="formEnvio"><input id="guiaEdicion" type="hidden"><fieldset><legend>Personas</legend><label for="buscarRemitente">Buscar remitente</label><input id="buscarRemitente" type="search" placeholder="Nombre, ID o correo"><label for="remitente">Remitente</label><select id="remitente" required></select><label for="buscarDestinatario">Buscar destinatario</label><input id="buscarDestinatario" type="search" placeholder="Nombre, ID o correo"><label for="destinatario">Destinatario</label><select id="destinatario" required></select></fieldset><fieldset><legend>Trayecto y paquete</legend><label for="origen">Origen</label><select id="origen" required></select><label for="destino">Destino</label><select id="destino" required></select><label for="peso">Peso real (kg)</label><input id="peso" type="number" min="0.1" max="500" step="0.1" required><div class="triple"><label for="largo">Largo</label><input id="largo" type="number" min="1" max="300" required><label for="ancho">Ancho</label><input id="ancho" type="number" min="1" max="300" required><label for="alto">Alto</label><input id="alto" type="number" min="1" max="300" required></div><label for="contenido">Contenido</label><select id="contenido"><option value="general">General</option><option value="fragil">Fragil</option><option value="frio">Cadena de frio</option></select><label class="check"><input id="urgente" type="checkbox"> Urgente</label><label class="check"><input id="autorizacionSobredimension" type="checkbox"> Sobredimension autorizada</label><label for="responsableAutorizacion">Responsable de autorizacion</label><input id="responsableAutorizacion" maxlength="80"></fieldset><div class="acciones"><button id="btnComparar">Comparar modalidades</button><button id="cancelarEdicionEnvio" type="button" class="secundario" hidden>Cancelar edicion</button></div></form></article><article class="tarjeta"><h2>Comparacion y resumen</h2><div id="comparacion"><p class="vacio">Complete el formulario.</p></div></article></div>
-<article class="tarjeta"><header class="fila"><div><h2>Solicitudes registradas</h2><p id="contadorSolicitudes" aria-live="polite">0 solicitudes</p></div><button id="limpiarFiltrosEnvios" class="secundario">Limpiar filtros</button></header><div class="filtros-envios"><label for="buscarEnvio">Texto libre<input id="buscarEnvio" type="search"></label><label for="filtroModalidadEnvio">Modalidad<select id="filtroModalidadEnvio"><option value="">Todas</option></select></label><label for="filtroEstadoEnvio">Estado<select id="filtroEstadoEnvio"><option value="">Todos</option></select></label><label for="filtroSucursalEnvio">Sucursal<select id="filtroSucursalEnvio"><option value="">Todas</option></select></label><label for="filtroFechaDesde">Desde<input id="filtroFechaDesde" type="date"></label><label for="filtroFechaHasta">Hasta<input id="filtroFechaHasta" type="date"></label><label for="cantidadEnviosPagina">Por pagina<select id="cantidadEnviosPagina"><option>5</option><option>10</option><option>20</option></select></label></div><div class="tabla-scroll"><table><caption>Envios del sistema</caption><thead><tr><th scope="col"><button class="orden-columna" data-orden="guia">Guia <span></span></button></th><th scope="col"><button class="orden-columna" data-orden="trayecto">Trayecto <span></span></button></th><th scope="col"><button class="orden-columna" data-orden="modalidad">Modalidad <span></span></button></th><th scope="col"><button class="orden-columna" data-orden="total">Total <span></span></button></th><th scope="col"><button class="orden-columna" data-orden="estado">Estado <span></span></button></th><th scope="col"><button class="orden-columna" data-orden="fecha">Fecha <span></span></button></th><th scope="col">Acciones</th></tr></thead><tbody id="tablaEnvios"></tbody></table></div><nav class="paginacion-envios" aria-label="Paginacion"><button id="paginaAnteriorEnvios" class="secundario">Anterior</button><p id="informacionPaginaEnvios">Pagina 0 de 0</p><button id="paginaSiguienteEnvios" class="secundario">Siguiente</button></nav></article>
-<dialog id="dialogoEnvio" class="dialogo-envio"><article><header class="fila"><h2 id="tituloDetalleEnvio">Detalle</h2><div class="acciones"><button id="irSeguimientoEnvio">Seguimiento</button><button id="imprimirDetalleEnvio">Imprimir</button><button id="cerrarDetalleEnvio" class="secundario">Cerrar</button></div></header><div id="contenidoDetalleEnvio"></div></article></dialog><dialog id="dialogoEliminarEnvio"><form id="formEliminarEnvio" method="dialog"><h2>Eliminar envio</h2><label for="motivoEliminacion">Motivo obligatorio</label><textarea id="motivoEliminacion" required minlength="5"></textarea><div class="acciones"><button value="cancel" class="secundario">Cancelar</button><button value="confirm" class="peligro">Eliminar</button></div></form></dialog></section>
-<section id="catalogo" class="vista"><header><p class="sobrelinea">M3</p><h1>Catalogo institucional</h1></header><div id="catalogoSucursales" class="rejilla"></div><article class="tarjeta"><h2>Modalidades, tarifas y factores</h2><div id="catalogoModalidades" class="rejilla"></div><div id="catalogoTarifas"></div></article></section>
-<section id="rutas" class="vista"><header><p class="sobrelinea">M4</p><h1>Despacho y consolidacion de rutas</h1></header><div class="dos-columnas"><article class="tarjeta"><h2>Nueva ruta de despacho</h2><form id="formRuta"><label for="rutaDestino">Destino</label><select id="rutaDestino" required></select><label for="rutaModalidad">Modalidad</label><select id="rutaModalidad" required></select><label for="rutaFechaSalida">Fecha de salida</label><input id="rutaFechaSalida" type="datetime-local" required><label for="rutaCapacidadPeso">Capacidad kg</label><input id="rutaCapacidadPeso" type="number" min="1" required><label for="rutaCapacidadCantidad">Capacidad de paquetes</label><input id="rutaCapacidadCantidad" type="number" min="1" required><button>Crear ruta</button></form></article><article class="tarjeta"><h2>Envios disponibles</h2><p>Solo se muestran envios en bodega.</p><div id="enviosDisponiblesRuta"></div></article></div><article class="tarjeta"><h2>Rutas de despacho</h2><div id="listaRutas"></div></article></section>
-<section id="seguimiento" class="vista"><header><p class="sobrelinea">M6</p><h1>Seguimiento y trazabilidad</h1></header><div class="dos-columnas"><article class="tarjeta"><form id="formSeguimiento"><label for="guiaSeguimiento">Codigo de guia</label><input id="guiaSeguimiento" required pattern="ENV-[0-9]{4}-[0-9]{5}"><button>Buscar</button></form><div id="resultadoSeguimiento"></div></article><article class="tarjeta"><h2>Linea de tiempo</h2><div id="historialSeguimiento"></div></article></div></section>
-<section id="inventario" class="vista"><header><p class="sobrelinea">M7</p><h1>Inventario del centro de distribucion</h1></header><div id="alertasInventario" aria-live="assertive"></div><div id="ocupacionSucursales" class="rejilla"></div><article class="tarjeta filtros-envios"><label for="filtroInventarioSucursal">Sucursal<select id="filtroInventarioSucursal"><option value="">Todas</option></select></label><label for="filtroInventarioEstado">Estado<select id="filtroInventarioEstado"><option value="">Todos</option></select></label></article><article class="tarjeta"><header class="fila"><h2>Paquetes en inventario</h2><strong id="totalInventario">0 paquetes</strong></header><div class="tabla-scroll"><table><caption>Paquetes ordenados por antiguedad</caption><thead><tr><th scope="col">Guia</th><th scope="col">Sucursal</th><th scope="col">Destino</th><th scope="col">Contenido</th><th scope="col">Peso</th><th scope="col">Dias</th><th scope="col">Situacion</th></tr></thead><tbody id="tablaInventario"></tbody></table></div></article><div class="dos-columnas"><article class="tarjeta"><h2>Distribucion por contenido</h2><div id="inventarioPorContenido" class="barras"></div></article><article class="tarjeta"><h2>Distribucion por destino</h2><div id="inventarioPorDestino" class="barras"></div></article></div></section>
-<section id="configuracion" class="vista"><header><p class="sobrelinea">M9</p><h1>Configuracion, respaldo y restauracion</h1></header><article class="tarjeta"><label for="tema">Tema</label><select id="tema"><option value="automatico">Automatico</option><option value="claro">Claro</option><option value="oscuro">Oscuro</option></select><label for="umbralOcupacion">Umbral de ocupacion (%)</label><input id="umbralOcupacion" type="number" min="50" max="100"><label for="diasRetencion">Dias maximos en bodega</label><input id="diasRetencion" type="number" min="1" max="30"><p id="usoAlmacenamiento" aria-live="polite"></p><div class="acciones"><button id="exportarRespaldo">Exportar JSON</button><label class="boton-archivo">Importar JSON<input id="importarRespaldo" type="file" accept="application/json" hidden></label><button id="cargarDemo" class="secundario">Cargar demo 40/15/5</button><button id="restablecerDatos" class="peligro">Restablecer</button></div></article></section>
-<footer>EcoRuta · Universidad Internacional de las Americas · 2026</footer></main></div>
-<dialog id="dialogoConfirmacion"><form method="dialog"><h2 id="tituloConfirmacion">Confirmar</h2><p id="textoConfirmacion"></p><div class="acciones"><button value="cancel" class="secundario">Cancelar</button><button value="confirm" class="peligro">Confirmar</button></div></form></dialog>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>EcoRuta | Logistica sostenible</title>
+    <link rel="stylesheet" href="css/estilos.css" />
+    <link rel="stylesheet" href="css/impresion.css" media="print" />
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <noscript
+      ><p class="alerta error">
+        EcoRuta requiere JavaScript. Active JavaScript y recargue.
+      </p></noscript
+    >
+    <div
+      id="estadoCarga"
+      class="pantalla-carga"
+      role="status"
+      aria-live="polite"
+    >
+      <div>
+        <h1>EcoRuta</h1>
+        <p id="textoCarga">Cargando catalogo institucional...</p>
+        <button id="btnReintentar" hidden>Reintentar</button>
+      </div>
+    </div>
+    <div id="aplicacion" class="aplicacion" hidden>
+      <aside class="lateral">
+        <header class="marca">
+          <span aria-hidden="true">♻</span>
+          <div><strong>EcoRuta</strong><small>Logistica sostenible</small></div>
+        </header>
+        <nav aria-label="Modulos">
+          <button class="nav-btn activo" data-vista="panel">Panel</button
+          ><button class="nav-btn" data-vista="registro">Registro</button
+          ><button class="nav-btn" data-vista="clientes">Clientes</button
+          ><button class="nav-btn" data-vista="catalogo">Catalogo</button
+          ><button class="nav-btn" data-vista="rutas">Despacho</button
+          ><button class="nav-btn" data-vista="seguimiento">Seguimiento</button
+          ><button class="nav-btn" data-vista="inventario">Inventario</button
+          ><button class="nav-btn" data-vista="configuracion">
+            Configuracion
+          </button>
+        </nav>
+      </aside>
+      <main>
+        <header class="superior">
+          <button id="btnMenu" aria-label="Abrir menu">☰</button>
+          <div>
+            <small>Sistema interno</small
+            ><span id="tituloVista">Panel general</span>
+          </div>
+          <span class="insignia">Programacion III</span>
+        </header>
+        <div
+          id="toasts"
+          class="toasts"
+          aria-live="polite"
+          aria-atomic="true"
+        ></div>
+        <section id="panel" class="vista activa">
+          <header>
+            <p class="sobrelinea">M8</p>
+            <h1>Panel de sostenibilidad</h1>
+          </header>
+          <article class="tarjeta filtros-envios">
+            <label for="panelFechaDesde"
+              >Desde<input id="panelFechaDesde" type="date" /></label
+            ><label for="panelFechaHasta"
+              >Hasta<input id="panelFechaHasta" type="date" /></label
+            ><label for="panelSucursal"
+              >Sucursal<select id="panelSucursal">
+                <option value="">Todas</option>
+              </select></label
+            ><button id="limpiarPanel" class="secundario">Limpiar panel</button>
+          </article>
+          <div class="kpis">
+            <article>
+              <span>Envios</span><strong id="kpiEnvios">0</strong>
+            </article>
+            <article>
+              <span>Facturado</span><strong id="kpiFacturado">₡0</strong>
+            </article>
+            <article>
+              <span>Tarifa promedio</span><strong id="kpiPromedio">₡0</strong>
+            </article>
+            <article>
+              <span>Peso</span><strong id="kpiPeso">0 kg</strong>
+            </article>
+            <article>
+              <span>Emisiones</span><strong id="kpiEmisiones">0 kg</strong>
+            </article>
+            <article>
+              <span>Evitadas limpias</span
+              ><strong id="kpiEvitadasLimpias">0 kg</strong>
+            </article>
+            <article>
+              <span>Evitadas consolidadas</span
+              ><strong id="kpiEvitadasConsolidadas">0 kg</strong>
+            </article>
+            <article>
+              <span>Baja emision</span
+              ><strong id="kpiPorcentajeLimpio">0%</strong>
+            </article>
+          </div>
+          <div class="dos-columnas">
+            <article class="tarjeta">
+              <h2>Envios por sucursal</h2>
+              <div id="graficoSucursales" class="barras"></div>
+            </article>
+            <article class="tarjeta">
+              <h2>Participacion por modalidad</h2>
+              <div
+                id="graficoModalidades"
+                class="barra-apilada"
+                aria-label="Participacion por modalidad"
+              ></div>
+              <div id="leyendaModalidades"></div>
+            </article>
+            <article class="tarjeta">
+              <h2>Cantidad por estado</h2>
+              <div id="resumenEstados"></div>
+            </article>
+            <article class="tarjeta">
+              <h2>Ranking ambiental</h2>
+              <ol id="rankingSucursales"></ol>
+            </article>
+          </div>
+        </section>
+        <section id="clientes" class="vista">
+          <header>
+            <p class="sobrelinea">M2</p>
+            <h1>Gestion de clientes</h1>
+          </header>
+          <div class="dos-columnas">
+            <article class="tarjeta">
+              <h2 id="tituloCliente">Nuevo cliente</h2>
+              <form id="formCliente">
+                <input id="clienteId" type="hidden" /><label
+                  for="identificacion"
+                  >Identificacion</label
+                ><input
+                  id="identificacion"
+                  required
+                  maxlength="20"
+                  pattern="[0-9-]{7,20}"
+                /><label for="nombre">Nombre</label
+                ><input
+                  id="nombre"
+                  required
+                  maxlength="80"
+                  autocomplete="name"
+                /><label for="telefono">Telefono</label
+                ><input
+                  id="telefono"
+                  required
+                  pattern="[0-9]{4}-[0-9]{4}"
+                  placeholder="8888-8888"
+                  autocomplete="tel"
+                /><label for="correo">Correo</label
+                ><input
+                  id="correo"
+                  type="email"
+                  required
+                  autocomplete="email"
+                /><label for="direccion">Direccion</label
+                ><input
+                  id="direccion"
+                  required
+                  autocomplete="street-address"
+                /><label for="codigoPostal">Codigo postal</label
+                ><input
+                  id="codigoPostal"
+                  required
+                  pattern="[0-9]{5}"
+                  maxlength="5"
+                  inputmode="numeric"
+                /><label for="provincia">Provincia</label
+                ><select id="provincia" required>
+                  <option value="">Seleccione</option>
+                  <option>San Jose</option>
+                  <option>Alajuela</option>
+                  <option>Cartago</option>
+                  <option>Heredia</option>
+                  <option>Guanacaste</option>
+                  <option>Puntarenas</option>
+                  <option>Limon</option>
+                </select>
+                <div class="acciones">
+                  <button>Guardar cliente</button
+                  ><button
+                    id="cancelarCliente"
+                    type="button"
+                    class="secundario"
+                    hidden
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </article>
+            <article class="tarjeta">
+              <h2>Clientes registrados</h2>
+              <label for="buscarCliente">Busqueda incremental</label
+              ><input
+                id="buscarCliente"
+                type="search"
+                placeholder="Nombre, identificacion o correo"
+              />
+              <div id="listaClientes"></div>
+            </article>
+          </div>
+          <dialog id="dialogoHistorialCliente">
+            <article>
+              <header class="fila">
+                <h2 id="tituloHistorialCliente">Historial</h2>
+                <button id="cerrarHistorialCliente" class="secundario">
+                  Cerrar
+                </button>
+              </header>
+              <div id="contenidoHistorialCliente"></div>
+            </article>
+          </dialog>
+        </section>
+        <section id="registro" class="vista">
+          <header>
+            <p class="sobrelinea">M1 + M5</p>
+            <h1>Registro de solicitudes</h1>
+          </header>
+          <div class="dos-columnas">
+            <article class="tarjeta">
+              <form id="formEnvio">
+                <input id="guiaEdicion" type="hidden" />
+                <fieldset>
+                  <legend>Personas</legend>
+                  <label for="buscarRemitente">Buscar remitente</label
+                  ><input
+                    id="buscarRemitente"
+                    type="search"
+                    placeholder="Nombre, ID o correo"
+                  /><label for="remitente">Remitente</label
+                  ><select id="remitente" required></select
+                  ><label for="buscarDestinatario">Buscar destinatario</label
+                  ><input
+                    id="buscarDestinatario"
+                    type="search"
+                    placeholder="Nombre, ID o correo"
+                  /><label for="destinatario">Destinatario</label
+                  ><select id="destinatario" required></select>
+                </fieldset>
+                <fieldset>
+                  <legend>Trayecto y paquete</legend>
+                  <label for="origen">Origen</label
+                  ><select id="origen" required></select
+                  ><label for="destino">Destino</label
+                  ><select id="destino" required></select
+                  ><label for="peso">Peso real (kg)</label
+                  ><input
+                    id="peso"
+                    type="number"
+                    min="0.1"
+                    max="500"
+                    step="0.1"
+                    required
+                  />
+                  <div class="triple">
+                    <label for="largo">Largo</label
+                    ><input
+                      id="largo"
+                      type="number"
+                      min="1"
+                      max="300"
+                      required
+                    /><label for="ancho">Ancho</label
+                    ><input
+                      id="ancho"
+                      type="number"
+                      min="1"
+                      max="300"
+                      required
+                    /><label for="alto">Alto</label
+                    ><input
+                      id="alto"
+                      type="number"
+                      min="1"
+                      max="300"
+                      required
+                    />
+                  </div>
+                  <label for="contenido">Contenido</label
+                  ><select id="contenido">
+                    <option value="general">General</option>
+                    <option value="fragil">Fragil</option>
+                    <option value="frio">Cadena de frio</option></select
+                  ><label class="check"
+                    ><input id="urgente" type="checkbox" /> Urgente</label
+                  ><label class="check"
+                    ><input id="autorizacionSobredimension" type="checkbox" />
+                    Sobredimension autorizada</label
+                  ><label for="responsableAutorizacion"
+                    >Responsable de autorizacion</label
+                  ><input id="responsableAutorizacion" maxlength="80" />
+                </fieldset>
+                <div class="acciones">
+                  <button id="btnComparar">Comparar modalidades</button
+                  ><button
+                    id="cancelarEdicionEnvio"
+                    type="button"
+                    class="secundario"
+                    hidden
+                  >
+                    Cancelar edicion
+                  </button>
+                </div>
+              </form>
+            </article>
+            <article class="tarjeta">
+              <h2>Comparacion y resumen</h2>
+              <div id="comparacion">
+                <p class="vacio">Complete el formulario.</p>
+              </div>
+            </article>
+          </div>
+          <article class="tarjeta">
+            <header class="fila">
+              <div>
+                <h2>Solicitudes registradas</h2>
+                <p id="contadorSolicitudes" aria-live="polite">0 solicitudes</p>
+              </div>
+              <button id="limpiarFiltrosEnvios" class="secundario">
+                Limpiar filtros
+              </button>
+            </header>
+            <div class="filtros-envios">
+              <label for="buscarEnvio"
+                >Texto libre<input id="buscarEnvio" type="search" /></label
+              ><label for="filtroModalidadEnvio"
+                >Modalidad<select id="filtroModalidadEnvio">
+                  <option value="">Todas</option>
+                </select></label
+              ><label for="filtroEstadoEnvio"
+                >Estado<select id="filtroEstadoEnvio">
+                  <option value="">Todos</option>
+                </select></label
+              ><label for="filtroSucursalEnvio"
+                >Sucursal<select id="filtroSucursalEnvio">
+                  <option value="">Todas</option>
+                </select></label
+              ><label for="filtroFechaDesde"
+                >Desde<input id="filtroFechaDesde" type="date" /></label
+              ><label for="filtroFechaHasta"
+                >Hasta<input id="filtroFechaHasta" type="date" /></label
+              ><label for="cantidadEnviosPagina"
+                >Por pagina<select id="cantidadEnviosPagina">
+                  <option>5</option>
+                  <option>10</option>
+                  <option>20</option>
+                </select></label
+              >
+            </div>
+            <div class="tabla-scroll">
+              <table>
+                <caption>
+                  Envios del sistema
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      <button class="orden-columna" data-orden="guia">
+                        Guia <span></span>
+                      </button>
+                    </th>
+                    <th scope="col">
+                      <button class="orden-columna" data-orden="trayecto">
+                        Trayecto <span></span>
+                      </button>
+                    </th>
+                    <th scope="col">
+                      <button class="orden-columna" data-orden="modalidad">
+                        Modalidad <span></span>
+                      </button>
+                    </th>
+                    <th scope="col">
+                      <button class="orden-columna" data-orden="total">
+                        Total <span></span>
+                      </button>
+                    </th>
+                    <th scope="col">
+                      <button class="orden-columna" data-orden="estado">
+                        Estado <span></span>
+                      </button>
+                    </th>
+                    <th scope="col">
+                      <button class="orden-columna" data-orden="fecha">
+                        Fecha <span></span>
+                      </button>
+                    </th>
+                    <th scope="col">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaEnvios"></tbody>
+              </table>
+            </div>
+            <nav class="paginacion-envios" aria-label="Paginacion">
+              <button id="paginaAnteriorEnvios" class="secundario">
+                Anterior
+              </button>
+              <p id="informacionPaginaEnvios">Pagina 0 de 0</p>
+              <button id="paginaSiguienteEnvios" class="secundario">
+                Siguiente
+              </button>
+            </nav>
+          </article>
+          <dialog id="dialogoEnvio" class="dialogo-envio">
+            <article>
+              <header class="fila">
+                <h2 id="tituloDetalleEnvio">Detalle</h2>
+                <div class="acciones">
+                  <button id="irSeguimientoEnvio">Seguimiento</button
+                  ><button id="imprimirDetalleEnvio">Imprimir</button
+                  ><button id="cerrarDetalleEnvio" class="secundario">
+                    Cerrar
+                  </button>
+                </div>
+              </header>
+              <div id="contenidoDetalleEnvio"></div>
+            </article>
+          </dialog>
+          <dialog id="dialogoEliminarEnvio">
+            <form id="formEliminarEnvio" method="dialog">
+              <h2>Eliminar envio</h2>
+              <label for="motivoEliminacion">Motivo obligatorio</label
+              ><textarea
+                id="motivoEliminacion"
+                required
+                minlength="5"
+              ></textarea>
+              <div class="acciones">
+                <button value="cancel" class="secundario">Cancelar</button
+                ><button value="confirm" class="peligro">Eliminar</button>
+              </div>
+            </form>
+          </dialog>
+        </section>
+        <section id="catalogo" class="vista">
+          <header>
+            <p class="sobrelinea">M3</p>
+            <h1>Catalogo institucional</h1>
+          </header>
+          <div id="catalogoSucursales" class="rejilla"></div>
+          <article class="tarjeta">
+            <h2>Modalidades, tarifas y factores</h2>
+            <div id="catalogoModalidades" class="rejilla"></div>
+            <div id="catalogoTarifas"></div>
+          </article>
+        </section>
+        <section id="rutas" class="vista">
+          <header>
+            <p class="sobrelinea">M4</p>
+            <h1>Despacho y consolidacion de rutas</h1>
+          </header>
+          <div class="dos-columnas">
+            <article class="tarjeta">
+              <h2>Nueva ruta de despacho</h2>
+              <form id="formRuta">
+                <label for="rutaDestino">Destino</label
+                ><select id="rutaDestino" required></select
+                ><label for="rutaModalidad">Modalidad</label
+                ><select id="rutaModalidad" required></select
+                ><label for="rutaFechaSalida">Fecha de salida</label
+                ><input
+                  id="rutaFechaSalida"
+                  type="datetime-local"
+                  required
+                /><label for="rutaCapacidadPeso">Capacidad kg</label
+                ><input
+                  id="rutaCapacidadPeso"
+                  type="number"
+                  min="1"
+                  required
+                /><label for="rutaCapacidadCantidad"
+                  >Capacidad de paquetes</label
+                ><input
+                  id="rutaCapacidadCantidad"
+                  type="number"
+                  min="1"
+                  required
+                /><button>Crear ruta</button>
+              </form>
+            </article>
+            <article class="tarjeta">
+              <h2>Envios disponibles</h2>
+              <p>Solo se muestran envios en bodega.</p>
+              <div id="enviosDisponiblesRuta"></div>
+            </article>
+          </div>
+          <article class="tarjeta">
+            <h2>Rutas de despacho</h2>
+            <div id="listaRutas"></div>
+          </article>
+        </section>
+        <section id="seguimiento" class="vista">
+          <header>
+            <p class="sobrelinea">M6</p>
+            <h1>Seguimiento y trazabilidad</h1>
+          </header>
+          <div class="dos-columnas">
+            <article class="tarjeta">
+              <form id="formSeguimiento">
+                <label for="guiaSeguimiento">Codigo de guia</label
+                ><input
+                  id="guiaSeguimiento"
+                  required
+                  pattern="ENV-[0-9]{4}-[0-9]{5}"
+                /><button>Buscar</button>
+              </form>
+              <div id="resultadoSeguimiento"></div>
+            </article>
+            <article class="tarjeta">
+              <h2>Linea de tiempo</h2>
+              <div id="historialSeguimiento"></div>
+            </article>
+          </div>
+        </section>
+        <section id="inventario" class="vista">
+          <header>
+            <p class="sobrelinea">M7</p>
+            <h1>Inventario del centro de distribucion</h1>
+          </header>
+          <div id="alertasInventario" aria-live="assertive"></div>
+          <div id="ocupacionSucursales" class="rejilla"></div>
+          <article class="tarjeta filtros-envios">
+            <label for="filtroInventarioSucursal"
+              >Sucursal<select id="filtroInventarioSucursal">
+                <option value="">Todas</option>
+              </select></label
+            ><label for="filtroInventarioEstado"
+              >Estado<select id="filtroInventarioEstado">
+                <option value="">Todos</option>
+              </select></label
+            >
+          </article>
+          <article class="tarjeta">
+            <header class="fila">
+              <h2>Paquetes en inventario</h2>
+              <strong id="totalInventario">0 paquetes</strong>
+            </header>
+            <div class="tabla-scroll">
+              <table>
+                <caption>
+                  Paquetes ordenados por antiguedad
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Guia</th>
+                    <th scope="col">Sucursal</th>
+                    <th scope="col">Destino</th>
+                    <th scope="col">Contenido</th>
+                    <th scope="col">Peso</th>
+                    <th scope="col">Dias</th>
+                    <th scope="col">Situacion</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaInventario"></tbody>
+              </table>
+            </div>
+          </article>
+          <div class="dos-columnas">
+            <article class="tarjeta">
+              <h2>Distribucion por contenido</h2>
+              <div id="inventarioPorContenido" class="barras"></div>
+            </article>
+            <article class="tarjeta">
+              <h2>Distribucion por destino</h2>
+              <div id="inventarioPorDestino" class="barras"></div>
+            </article>
+          </div>
+        </section>
+        <section id="configuracion" class="vista">
+          <header>
+            <p class="sobrelinea">M9</p>
+            <h1>Configuracion, respaldo y restauracion</h1>
+          </header>
+          <article class="tarjeta">
+            <label for="tema">Tema</label
+            ><select id="tema">
+              <option value="automatico">Automatico</option>
+              <option value="claro">Claro</option>
+              <option value="oscuro">Oscuro</option></select
+            ><label for="umbralOcupacion">Umbral de ocupacion (%)</label
+            ><input
+              id="umbralOcupacion"
+              type="number"
+              min="50"
+              max="100"
+            /><label for="diasRetencion">Dias maximos en bodega</label
+            ><input id="diasRetencion" type="number" min="1" max="30" />
+            <p id="usoAlmacenamiento" aria-live="polite"></p>
+            <div class="acciones">
+              <button id="exportarRespaldo">Exportar JSON</button
+              ><label class="boton-archivo"
+                >Importar JSON<input
+                  id="importarRespaldo"
+                  type="file"
+                  accept="application/json"
+                  hidden /></label
+              ><button id="cargarDemo" class="secundario">
+                Cargar demo 40/15/5</button
+              ><button id="restablecerDatos" class="peligro">
+                Restablecer
+              </button>
+            </div>
+          </article>
+        </section>
+        <footer>
+          EcoRuta · Universidad Internacional de las Americas · 2026
+        </footer>
+      </main>
+    </div>
+    <dialog id="dialogoConfirmacion">
+      <form method="dialog">
+        <h2 id="tituloConfirmacion">Confirmar</h2>
+        <p id="textoConfirmacion"></p>
+        <div class="acciones">
+          <button value="cancel" class="secundario">Cancelar</button
+          ><button value="confirm" class="peligro">Confirmar</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

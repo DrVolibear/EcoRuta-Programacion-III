@@ -1,1 +1,22 @@
-import{validarCatalogo}from"./validaciones.js";let cache=null;export async function cargarCatalogo(){try{const r=await fetch("./datos/datos.json",{cache:"no-store"});if(!r.ok)throw Error(`HTTP ${r.status}`);cache=validarCatalogo(await r.json());localStorage.setItem("ecoruta_catalogo_cache",JSON.stringify(cache));return cache}catch(e){const g=localStorage.getItem("ecoruta_catalogo_cache");if(g)return validarCatalogo(JSON.parse(g));throw Error(`No fue posible cargar el catálogo: ${e.message}`)}}export function obtenerDistancia(c,o,d){if(o===d)return 0;const n=c.distancias[o]?.[d];if(typeof n!=="number")throw Error(`No existe distancia entre ${o} y ${d}`);return n}
+import { validarCatalogo } from "./validaciones.js";
+let cache = null;
+export async function cargarCatalogo() {
+  try {
+    const r = await fetch("./datos/datos.json", { cache: "no-store" });
+    if (!r.ok) throw Error(`HTTP ${r.status}`);
+    cache = validarCatalogo(await r.json());
+    localStorage.setItem("ecoruta_catalogo_cache", JSON.stringify(cache));
+    return cache;
+  } catch (e) {
+    const g = localStorage.getItem("ecoruta_catalogo_cache");
+    if (g) return validarCatalogo(JSON.parse(g));
+    throw Error(`No fue posible cargar el catálogo: ${e.message}`);
+  }
+}
+export function obtenerDistancia(c, o, d) {
+  if (o === d) return 0;
+  const n = c.distancias[o]?.[d];
+  if (typeof n !== "number")
+    throw Error(`No existe distancia entre ${o} y ${d}`);
+  return n;
+}

@@ -1,8 +1,88 @@
-import{guardarEstado}from"../persistencia.js";import{fechaLocal}from"../utilidades.js";
-export const ESTADOS=["registrado","en bodega","asignado a ruta","en ruta","entregado","devuelto"];
-export const TRANSICIONES={registrado:["en bodega","devuelto"],"en bodega":["devuelto"],"asignado a ruta":["en bodega"],"en ruta":["entregado","devuelto"],entregado:[],devuelto:[]};
-let estado,catalogo,avisar,actualizar,confirmar,seleccionado=null;const nombre=e=>e.replace(/(^| )\S/g,l=>l.toUpperCase());const suc=c=>catalogo.sucursales.find(s=>s.codigo===c)?.nombre||c;
-export function iniciarSeguimiento(e,c,a,u,co){estado=e;catalogo=c;avisar=a;actualizar=u;confirmar=co;formSeguimiento.addEventListener("submit",buscar);resultadoSeguimiento.addEventListener("click",cambiar)}
-function buscar(ev){ev.preventDefault();seleccionado=estado.envios.find(e=>e.codigoGuia.toUpperCase()===guiaSeguimiento.value.trim().toUpperCase());if(!seleccionado){resultadoSeguimiento.innerHTML='<p class="vacio">No se encontro la guia.</p>';historialSeguimiento.innerHTML="";return avisar("Guia no encontrada",true)}render()}
-function render(){const opciones=TRANSICIONES[seleccionado.estado]||[];resultadoSeguimiento.innerHTML=`<article><h2>${seleccionado.codigoGuia}</h2><p>${suc(seleccionado.sucursalOrigen)} → ${suc(seleccionado.sucursalDestino)}</p><p><span class="estado">${nombre(seleccionado.estado)}</span></p>${opciones.map(e=>`<button data-estado="${e}">Cambiar a ${nombre(e)}</button>`).join(" ")||'<p>Estado final o controlado por la ruta.</p>'}</article>`;historialSeguimiento.innerHTML=(seleccionado.historial||[]).slice().reverse().map(h=>`<article class="linea-tiempo"><strong>${nombre(h.estadoAnterior||"inicio")} → ${nombre(h.estado)}</strong><p>${h.detalle||"Cambio de estado"}</p><small>${fechaLocal(h.fecha)}</small></article>`).join("")}
-async function cambiar(ev){const b=ev.target.closest("button[data-estado]");if(!b)return;const nuevo=b.dataset.estado;if(!(TRANSICIONES[seleccionado.estado]||[]).includes(nuevo))return avisar("Transicion no valida",true);if(!(await confirmar("Cambiar estado",`¿Cambiar ${seleccionado.codigoGuia} a ${nuevo}?`)))return;const anterior=seleccionado.estado;seleccionado.estado=nuevo;seleccionado.historial.push({estadoAnterior:anterior,estado:nuevo,fecha:new Date().toISOString(),detalle:`Cambio manual de ${anterior} a ${nuevo}`});guardarEstado(estado);render();actualizar();document.dispatchEvent(new Event("inventarioActualizado"));avisar("Estado actualizado")}
+import { guardarEstado } from "../persistencia.js";
+import { fechaLocal } from "../utilidades.js";
+export const ESTADOS = [
+  "registrado",
+  "en bodega",
+  "asignado a ruta",
+  "en ruta",
+  "entregado",
+  "devuelto",
+];
+export const TRANSICIONES = {
+  registrado: ["en bodega", "devuelto"],
+  "en bodega": ["devuelto"],
+  "asignado a ruta": ["en bodega"],
+  "en ruta": ["entregado", "devuelto"],
+  entregado: [],
+  devuelto: [],
+};
+let estado,
+  catalogo,
+  avisar,
+  actualizar,
+  confirmar,
+  seleccionado = null;
+const nombre = (e) => e.replace(/(^| )\S/g, (l) => l.toUpperCase());
+const suc = (c) => catalogo.sucursales.find((s) => s.codigo === c)?.nombre || c;
+export function iniciarSeguimiento(e, c, a, u, co) {
+  estado = e;
+  catalogo = c;
+  avisar = a;
+  actualizar = u;
+  confirmar = co;
+  formSeguimiento.addEventListener("submit", buscar);
+  resultadoSeguimiento.addEventListener("click", cambiar);
+}
+function buscar(ev) {
+  ev.preventDefault();
+  seleccionado = estado.envios.find(
+    (e) =>
+      e.codigoGuia.toUpperCase() === guiaSeguimiento.value.trim().toUpperCase(),
+  );
+  if (!seleccionado) {
+    resultadoSeguimiento.innerHTML =
+      '<p class="vacio">No se encontro la guia.</p>';
+    historialSeguimiento.innerHTML = "";
+    return avisar("Guia no encontrada", true);
+  }
+  render();
+}
+function render() {
+  const opciones = TRANSICIONES[seleccionado.estado] || [];
+  resultadoSeguimiento.innerHTML = `<article><h2>${seleccionado.codigoGuia}</h2><p>${suc(seleccionado.sucursalOrigen)} → ${suc(seleccionado.sucursalDestino)}</p><p><span class="estado">${nombre(seleccionado.estado)}</span></p>${opciones.map((e) => `<button data-estado="${e}">Cambiar a ${nombre(e)}</button>`).join(" ") || "<p>Estado final o controlado por la ruta.</p>"}</article>`;
+  historialSeguimiento.innerHTML = (seleccionado.historial || [])
+    .slice()
+    .reverse()
+    .map(
+      (h) =>
+        `<article class="linea-tiempo"><strong>${nombre(h.estadoAnterior || "inicio")} → ${nombre(h.estado)}</strong><p>${h.detalle || "Cambio de estado"}</p><small>${fechaLocal(h.fecha)}</small></article>`,
+    )
+    .join("");
+}
+async function cambiar(ev) {
+  const b = ev.target.closest("button[data-estado]");
+  if (!b) return;
+  const nuevo = b.dataset.estado;
+  if (!(TRANSICIONES[seleccionado.estado] || []).includes(nuevo))
+    return avisar("Transicion no valida", true);
+  if (
+    !(await confirmar(
+      "Cambiar estado",
+      `¿Cambiar ${seleccionado.codigoGuia} a ${nuevo}?`,
+    ))
+  )
+    return;
+  const anterior = seleccionado.estado;
+  seleccionado.estado = nuevo;
+  seleccionado.historial.push({
+    estadoAnterior: anterior,
+    estado: nuevo,
+    fecha: new Date().toISOString(),
+    detalle: `Cambio manual de ${anterior} a ${nuevo}`,
+  });
+  guardarEstado(estado);
+  render();
+  actualizar();
+  document.dispatchEvent(new Event("inventarioActualizado"));
+  avisar("Estado actualizado");
+}
