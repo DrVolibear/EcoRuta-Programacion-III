@@ -19,7 +19,8 @@ let estado,
   pagina = 1,
   orden = { campo: "fecha", direccion: "desc" },
   guiaDetalle = "",
-  guiaEliminar = "";
+  guiaEliminar = "",
+  guiaOrigenReenvio = "";
 const $ = (s) => document.querySelector(s),
   suc = (c) => catalogo.sucursales.find((s) => s.codigo === c),
   mod = (c) => catalogo.modalidades.find((m) => m.codigo === c),
@@ -271,12 +272,15 @@ function confirmarOpcion(i) {
       emisionesEvitadasConsolidacionKgCO2e: 0,
       estado: "registrado",
       rutaAsignada: null,
+      envioOrigen: guiaOrigenReenvio || null,
       historial: [
         {
           estadoAnterior: null,
           estado: "registrado",
           fecha: new Date().toISOString(),
-          detalle: "Solicitud registrada",
+          detalle: guiaOrigenReenvio
+            ? `Reenvio creado desde ${guiaOrigenReenvio}`
+            : "Solicitud registrada",
         },
       ],
       fechaRegistro: new Date().toISOString(),
@@ -296,6 +300,7 @@ function insertarOActualizarTrasRegistro() {
 function cancelarEdicion() {
   formEnvio.reset();
   guiaEdicion.value = "";
+  guiaOrigenReenvio = "";
   cancelarEdicionEnvio.hidden = true;
   btnComparar.textContent = "Comparar modalidades";
   comparacion.innerHTML = '<p class="vacio">Complete el formulario.</p>';
@@ -307,7 +312,31 @@ function accionTabla(ev) {
   const e = estado.envios.find((x) => x.codigoGuia === b.dataset.guia);
   if (!e) return;
   if (b.dataset.accion === "detalle") return detalle(e);
-  if (b.dataset.accion === "editar") {
+  if (b.dataset.accion === "reenviar") {
+      if (e.estado !== "devuelto")
+        return avisar("Solo se reenvian solicitudes devueltas", true);
+      guiaOrigenReenvio = e.codigoGuia;
+      guiaEdicion.value = "";
+      remitente.value = e.clienteRemitente;
+      destinatario.value = e.clienteDestinatario;
+      origen.value = e.sucursalOrigen;
+      destino.value = e.sucursalDestino;
+      peso.value = e.pesoReal;
+      largo.value = e.dimensiones.largo;
+      ancho.value = e.dimensiones.ancho;
+      alto.value = e.dimensiones.alto;
+      contenido.value = e.contenido;
+      urgente.checked = e.urgente;
+      autorizacionSobredimension.checked = !!e.autorizacionSobredimension;
+      responsableAutorizacion.value =
+        e.autorizacionSobredimension?.responsable || "";
+      cancelarEdicionEnvio.hidden = false;
+      btnComparar.textContent = "Comparar para reenviar";
+      comparacion.innerHTML = `<p class="alerta">Reenvio basado en ${e.codigoGuia}. Se generara una guia nueva.</p>`;
+      formEnvio.scrollIntoView({ behavior: "smooth" });
+      return avisar("Datos copiados. Revise y compare las modalidades");
+    }
+    if (b.dataset.accion === "editar") {
     if (e.estado !== "registrado")
       return avisar("Solo se editan envios registrados", true);
     guiaEdicion.value = e.codigoGuia;
@@ -426,7 +455,7 @@ export function renderEnvios() {
     ? p
         .map(
           (e) =>
-            `<tr><td><strong>${e.codigoGuia}</strong></td><td>${e.sucursalOrigen} → ${e.sucursalDestino}</td><td>${mod(e.modalidad)?.nombre || e.modalidad}</td><td>${moneda(e.tarifa?.total || 0)}</td><td><span class="estado">${nombreEstado(e.estado)}</span></td><td>${fechaLocal(e.fechaRegistro)}</td><td><div class="acciones"><button data-accion="detalle" data-guia="${e.codigoGuia}">Ver</button><button data-accion="editar" data-guia="${e.codigoGuia}" ${e.estado !== "registrado" ? "disabled" : ""}>Editar</button><button class="peligro" data-accion="eliminar" data-guia="${e.codigoGuia}" ${["en ruta", "entregado"].includes(e.estado) ? "disabled" : ""}>Eliminar</button></div></td></tr>`,
+            `<tr><td><strong>${e.codigoGuia}</strong></td><td>${e.sucursalOrigen} → ${e.sucursalDestino}</td><td>${mod(e.modalidad)?.nombre || e.modalidad}</td><td>${moneda(e.tarifa?.total || 0)}</td><td><span class="estado">${nombreEstado(e.estado)}</span></td><td>${fechaLocal(e.fechaRegistro)}</td><td><div class="acciones"><button data-accion="detalle" data-guia="${e.codigoGuia}">Ver</button>${e.estado === "devuelto" ? `<button data-accion="reenviar" data-guia="${e.codigoGuia}">Reenviar</button>` : `<button data-accion="editar" data-guia="${e.codigoGuia}" ${e.estado !== "registrado" ? "disabled" : ""}>Editar</button>`}<button class="peligro" data-accion="eliminar" data-guia="${e.codigoGuia}" ${["en ruta", "entregado"].includes(e.estado) ? "disabled" : ""}>Eliminar</button></div></td></tr>`,
         )
         .join("")
     : '<tr><td colspan="7" class="vacio">No hay resultados.</td></tr>';

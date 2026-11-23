@@ -73,12 +73,24 @@ async function cambiar(ev) {
   )
     return;
   const anterior = seleccionado.estado;
+  let detalleRuta = "";
+  if (anterior === "asignado a ruta" && nuevo === "en bodega") {
+      const codigoRuta = seleccionado.rutaAsignada;
+      const ruta = estado.rutas.find((r) => r.codigo === codigoRuta);
+      if (ruta) {
+        ruta.envios = [...new Set(ruta.envios || [])].filter(
+          (guia) => guia !== seleccionado.codigoGuia,
+        );
+        detalleRuta = `; retirado automaticamente de ${ruta.codigo}`;
+      }
+      seleccionado.rutaAsignada = null;
+    }
   seleccionado.estado = nuevo;
   seleccionado.historial.push({
     estadoAnterior: anterior,
     estado: nuevo,
     fecha: new Date().toISOString(),
-    detalle: `Cambio manual de ${anterior} a ${nuevo}`,
+      detalle: `Cambio manual de ${anterior} a ${nuevo}${detalleRuta}`,
   });
   guardarEstado(estado);
   render();

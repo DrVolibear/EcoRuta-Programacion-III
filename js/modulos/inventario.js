@@ -1,6 +1,7 @@
-import { diasDesde } from "../utilidades.js";
+import { diasDesde, escapar } from "../utilidades.js";
+import { guardarEstado } from "../persistencia.js";
 import { ESTADOS } from "./seguimiento.js";
-let estado, catalogo;
+let estado, catalogo, avisar, confirmar;
 const suc = (c) => catalogo.sucursales.find((s) => s.codigo === c),
   nombre = (e) => e.replace(/(^| )\S/g, (l) => l.toUpperCase());
 function ubic(e) {
@@ -9,7 +10,7 @@ function ubic(e) {
   if (e.estado === "en ruta") return "EN-RUTA";
   return e.sucursalDestino;
 }
-export function iniciarInventario(e, c) {
+export function iniciarInventario(e, c, a = () => {}, co = async () => true) {
   estado = e;
   catalogo = c;
   filtroInventarioSucursal.innerHTML =
@@ -36,7 +37,10 @@ function barras(contenedor, datos) {
     .join("");
 }
 function render() {
-  const enInventario = estado.envios.filter(
+  const pendientes = estado.envios.filter((e) => e.estado === "registrado");
+    totalPendientesIngreso.textContent = `${pendientes.length} ${pendientes.length === 1 ? "pendiente" : "pendientes"}`;
+    pendientesIngreso.innerHTML = pendientes.length ? pendientes.map((e) => `<article class="tarjeta pendiente-card"><span class="estado">Registrado</span><h3>${escapar(e.codigoGuia)}</h3>${e.envioOrigen ? `<p><strong>Reenvio de:</strong> ${escapar(e.envioOrigen)}</p>` : ""}<p>${escapar(suc(e.sucursalOrigen)?.nombre || e.sucursalOrigen)} → ${escapar(suc(e.sucursalDestino)?.nombre || e.sucursalDestino)}</p><p>${escapar(e.contenido)} · ${e.pesoFacturable} kg</p><button data-ingresar="${escapar(e.codigoGuia)}">Ingresar a bodega</button></article>`).join("") : `<p class="vacio">No hay paquetes pendientes de recepcion.</p>`;
+    const enInventario = estado.envios.filter(
       (e) => !["entregado", "devuelto"].includes(e.estado),
     ),
     ocupaciones = catalogo.sucursales.map((s) => {

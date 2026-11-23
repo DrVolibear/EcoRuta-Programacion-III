@@ -1,7 +1,7 @@
 import { descargarJSON } from "./utilidades.js";
 import { validarRespaldo } from "./validaciones.js";
-const CLAVE = "ecoruta_estado_v3";
-export const VERSION = 3;
+const CLAVE = "ecoruta_estado_v4";
+export const VERSION = 4;
 export function estadoInicial() {
   return {
     version: VERSION,
@@ -25,7 +25,7 @@ export function normalizarEstado(d = {}) {
     ...d,
     version: VERSION,
     clientes: Array.isArray(d.clientes) ? d.clientes : [],
-    envios: Array.isArray(d.envios) ? d.envios : [],
+    envios: Array.isArray(d.envios) ? d.envios.map((e) => ({ ...e, envioOrigen: e.envioOrigen || null, historial: Array.isArray(e.historial) ? e.historial : [] })) : [],
     enviosEliminados: Array.isArray(d.enviosEliminados)
       ? d.enviosEliminados
       : [],
@@ -35,7 +35,7 @@ export function normalizarEstado(d = {}) {
 }
 export function cargarEstado() {
   try {
-    for (const clave of [CLAVE, "ecoruta_estado_v2", "ecoruta_estado_v1"]) {
+    for (const clave of [CLAVE, "ecoruta_estado_v3", "ecoruta_estado_v2", "ecoruta_estado_v1"]) {
       const t = localStorage.getItem(clave);
       if (t) return normalizarEstado(JSON.parse(t));
     }

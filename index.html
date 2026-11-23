@@ -52,7 +52,7 @@
             <small>Sistema interno</small
             ><span id="tituloVista">Panel general</span>
           </div>
-          <span class="insignia">Programacion III</span>
+          <div class="busqueda-global"><label class="sr-only" for="busquedaGlobal">Buscar en EcoRuta</label><input id="busquedaGlobal" type="search" placeholder="Buscar guia, cliente o ruta" autocomplete="off"><div id="resultadosGlobales" class="resultados-globales" hidden></div></div><span class="insignia">EcoRuta v2.0.2</span>
         </header>
         <div
           id="toasts"
@@ -530,6 +530,7 @@
             <h1>Inventario del centro de distribucion</h1>
           </header>
           <div id="alertasInventario" aria-live="assertive"></div>
+          <article class="tarjeta pendientes-ingreso"><header class="fila"><div><p class="sobrelinea">Recepcion</p><h2>Pendientes de ingreso a bodega</h2></div><strong id="totalPendientesIngreso">0 pendientes</strong></header><p class="texto-ayuda">Solicitudes registradas, incluidos reenvios, que aun no han sido recibidas fisicamente.</p><div id="pendientesIngreso" class="rejilla"></div></article>
           <div id="ocupacionSucursales" class="rejilla"></div>
           <article class="tarjeta filtros-envios">
             <label for="filtroInventarioSucursal"
@@ -615,7 +616,7 @@
           </article>
         </section>
         <footer>
-          EcoRuta · Universidad Internacional de las Americas · 2026
+          EcoRuta v2.0.2 · Universidad Internacional de las Americas · 2026
         </footer>
       </main>
     </div>

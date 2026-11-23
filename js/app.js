@@ -17,7 +17,7 @@ import { iniciarRutas } from "./modulos/rutas.js";
 import { iniciarSeguimiento, ESTADOS } from "./modulos/seguimiento.js";
 import { iniciarInventario } from "./modulos/inventario.js";
 import { calcularTarifa, calcularEmisiones, moneda } from "./reglas.js";
-import { bytesLocalStorage } from "./utilidades.js";
+import { bytesLocalStorage, normalizarTexto, escapar } from "./utilidades.js";
 let estado = cargarEstado(),
   catalogo;
 const $ = (s) => document.querySelector(s);
@@ -416,6 +416,9 @@ function iniciarInteraccionesVisuales() {
   });
   preparar();
 }
+
+function iniciarBusquedaGlobal(){const input=document.getElementById("busquedaGlobal"),caja=document.getElementById("resultadosGlobales");if(!input||!caja)return;const cerrar=()=>{caja.hidden=true;caja.innerHTML=""};input.addEventListener("input",()=>{const q=normalizarTexto(input.value.trim());if(q.length<2)return cerrar();const clientes=estado.clientes.filter(c=>normalizarTexto([c.nombre,c.identificacion,c.correo].join(" ")).includes(q)).slice(0,4).map(c=>({tipo:"Cliente",titulo:c.nombre,detalle:c.identificacion,vista:"clientes"}));const envios=estado.envios.filter(e=>normalizarTexto([e.codigoGuia,e.estado,e.envioOrigen].join(" ")).includes(q)).slice(0,6).map(e=>({tipo:"Envio",titulo:e.codigoGuia,detalle:e.estado,vista:"registro",guia:e.codigoGuia}));const rutas=estado.rutas.filter(r=>normalizarTexto([r.codigo,r.sucursalDestino,r.estado].join(" ")).includes(q)).slice(0,4).map(r=>({tipo:"Ruta",titulo:r.codigo,detalle:r.estado,vista:"despacho"}));const resultados=[...envios,...clientes,...rutas];caja.innerHTML=resultados.length?resultados.map((r,i)=>`<button type="button" data-resultado="${i}"><small>${escapar(r.tipo)}</small><strong>${escapar(r.titulo)}</strong><span>${escapar(r.detalle||"")}</span></button>`).join(""):`<p class="vacio">Sin coincidencias.</p>`;caja.hidden=false;caja.onclick=ev=>{const b=ev.target.closest("[data-resultado]");if(!b)return;const r=resultados[+b.dataset.resultado];vista(r.vista);if(r.guia){buscarEnvio.value=r.guia;buscarEnvio.dispatchEvent(new Event("input"));}input.value="";cerrar()}});document.addEventListener("click",ev=>{if(!ev.target.closest(".busqueda-global"))cerrar()})}
+function mejorarFlujosVisuales(){const estados=["registrado","en bodega","asignado a ruta","en ruta","entregado"];const aplicar=()=>{document.querySelectorAll("#resultadoSeguimiento").forEach(z=>{const texto=normalizarTexto(z.textContent),actual=estados.findIndex(e=>texto.includes(e));if(actual<0||z.querySelector(".progreso-envio"))return;z.insertAdjacentHTML("afterbegin",`<ol class="progreso-envio" aria-label="Progreso del envio">${estados.map((e,i)=>`<li class="${i<actual?"completo":i===actual?"actual":""}">${e.replace(/(^| )\S/g,l=>l.toUpperCase())}</li>`).join("")}</ol>`)});document.querySelectorAll("#listaRutas .tarjeta,#rutasContenedor .tarjeta").forEach(t=>{const vacia=/0\s*\/|0 paquetes/i.test(t.textContent);const b=[...t.querySelectorAll("button")].find(x=>/cerrar y despachar/i.test(x.textContent));if(b){b.disabled=vacia;b.title=vacia?"Agregue al menos un envio valido antes de despachar":""}})};new MutationObserver(aplicar).observe(document.body,{childList:true,subtree:true});aplicar()}
 async function iniciar() {
   try {
     catalogo = await cargarCatalogo();
@@ -424,7 +427,7 @@ async function iniciar() {
     iniciarEnvios(estado, catalogo, avisar, refrescar, confirmar);
     iniciarRutas(estado, catalogo, avisar, refrescar, confirmar);
     iniciarSeguimiento(estado, catalogo, avisar, refrescar, confirmar);
-    iniciarInventario(estado, catalogo);
+    iniciarInventario(estado, catalogo, avisar, confirmar);
     navegacion();
     iniciarInteraccionesVisuales();
     configuracion();
