@@ -84,7 +84,9 @@ async function cambiar(ev) {
         detalleRuta = `; retirado automaticamente de ${ruta.codigo}`;
       }
       seleccionado.rutaAsignada = null;
+      seleccionado.fechaIngresoBodega = new Date().toISOString();
     }
+  if (anterior === "registrado" && nuevo === "en bodega") seleccionado.fechaIngresoBodega = new Date().toISOString();
   seleccionado.estado = nuevo;
   seleccionado.historial.push({
     estadoAnterior: anterior,

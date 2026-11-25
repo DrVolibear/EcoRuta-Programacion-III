@@ -25,8 +25,9 @@ function limpiar() {
 function guardar(ev) {
   ev.preventDefault();
   const id = clienteId.value,
-    ident = identificacion.value.trim();
-  if (estado.clientes.some((c) => c.identificacion === ident && c.id !== id))
+    ident = identificacion.value.trim(),
+    identNormalizada = normalizarTexto(ident).replace(/[^a-z0-9]/g, "");
+  if (estado.clientes.some((c) => normalizarTexto(c.identificacion).replace(/[^a-z0-9]/g, "") === identNormalizada && c.id !== id))
     return avisar("La identificacion ya existe", true);
   const nuevo = {
     id: id || crypto.randomUUID(),
@@ -81,7 +82,7 @@ async function accion(ev) {
       ),
       total = envios.reduce((s, e) => s + (e.tarifa?.total || 0), 0);
     tituloHistorialCliente.textContent = `Historial de ${c.nombre}`;
-    contenidoHistorialCliente.innerHTML = `<p><strong>${envios.length}</strong> envios · Total facturado: <strong>${moneda(total)}</strong></p>${envios.map((e) => `<article class="cliente"><div><strong>${e.codigoGuia}</strong><p>${fechaLocal(e.fechaRegistro)} · ${moneda(e.tarifa?.total || 0)} · ${e.estado}</p></div></article>`).join("") || '<p class="vacio">Sin envios.</p>'}`;
+    contenidoHistorialCliente.innerHTML = `<p><strong>${envios.length}</strong> envios · Total facturado: <strong>${moneda(total)}</strong></p>${envios.map((e) => `<article class="cliente"><div><strong>${escapar(e.codigoGuia)}</strong><p>${fechaLocal(e.fechaRegistro)} · ${moneda(e.tarifa?.total || 0)} · ${escapar(e.estado)}</p></div></article>`).join("") || '<p class="vacio">Sin envios.</p>'}`;
     dialogoHistorialCliente.showModal();
     cerrarHistorialCliente.focus();
     return;

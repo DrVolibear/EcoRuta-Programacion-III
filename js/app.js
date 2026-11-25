@@ -257,6 +257,7 @@ function generarDemo() {
       emisionesEvitadasConsolidacionKgCO2e: i % 5 === 0 ? 0.04 : 0,
       estado: estadoEnvio,
       rutaAsignada: null,
+      fechaIngresoBodega: ["en bodega", "asignado a ruta", "en ruta"].includes(estadoEnvio) ? fecha : null,
       historial: [
         {
           estadoAnterior: null,
@@ -329,7 +330,7 @@ function configuracion() {
       if (
         await confirmar(
           "Importar respaldo",
-          "La operacion reemplazara todos los datos.",
+          `El respaldo contiene ${d.clientes.length} clientes, ${d.envios.length} envios y ${d.rutas.length} rutas. Reemplazara todos los datos actuales.`,
         )
       ) {
         reemplazarEstado(estado, d);

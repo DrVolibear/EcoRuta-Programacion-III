@@ -52,7 +52,7 @@
             <small>Sistema interno</small
             ><span id="tituloVista">Panel general</span>
           </div>
-          <div class="busqueda-global"><label class="sr-only" for="busquedaGlobal">Buscar en EcoRuta</label><input id="busquedaGlobal" type="search" placeholder="Buscar guia, cliente o ruta" autocomplete="off"><div id="resultadosGlobales" class="resultados-globales" hidden></div></div><span class="insignia">EcoRuta v2.0.2</span>
+          <div class="busqueda-global"><label class="sr-only" for="busquedaGlobal">Buscar en EcoRuta</label><input id="busquedaGlobal" type="search" placeholder="Buscar guia, cliente o ruta" autocomplete="off"><div id="resultadosGlobales" class="resultados-globales" hidden></div></div><span class="insignia">EcoRuta v2.1.0</span>
         </header>
         <div
           id="toasts"
@@ -435,8 +435,10 @@
               ><textarea
                 id="motivoEliminacion"
                 required
-                minlength="5"
+                aria-describedby="ayudaMotivoEliminacion"
+                minlength="10"
               ></textarea>
+              <small id="ayudaMotivoEliminacion">Explique el motivo en al menos 10 caracteres.</small>
               <div class="acciones">
                 <button value="cancel" class="secundario">Cancelar</button
                 ><button value="confirm" class="peligro">Eliminar</button>
@@ -616,7 +618,7 @@
           </article>
         </section>
         <footer>
-          EcoRuta v2.0.2 · Universidad Internacional de las Americas · 2026
+          EcoRuta v2.1.0 · Universidad Internacional de las Americas · 2026
         </footer>
       </main>
     </div>

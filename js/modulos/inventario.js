@@ -5,7 +5,7 @@ let estado, catalogo, avisar, confirmar;
 const suc = (c) => catalogo.sucursales.find((s) => s.codigo === c),
   nombre = (e) => e.replace(/(^| )\S/g, (l) => l.toUpperCase());
 function ubic(e) {
-  if (["registrado", "en bodega"].includes(e.estado)) return e.sucursalOrigen;
+  if (e.estado === "en bodega") return e.sucursalOrigen;
   if (e.estado === "asignado a ruta") return e.sucursalOrigen;
   if (e.estado === "en ruta") return "EN-RUTA";
   return e.sucursalDestino;
@@ -13,6 +13,8 @@ function ubic(e) {
 export function iniciarInventario(e, c, a = () => {}, co = async () => true) {
   estado = e;
   catalogo = c;
+  avisar = a;
+  confirmar = co;
   filtroInventarioSucursal.innerHTML =
     '<option value="">Todas</option>' +
     c.sucursales
@@ -25,8 +27,44 @@ export function iniciarInventario(e, c, a = () => {}, co = async () => true) {
   filtroInventarioSucursal.onchange = render;
   filtroInventarioEstado.onchange = render;
   document.addEventListener("inventarioActualizado", render);
+  const contenedorPendientes = document.getElementById("pendientesIngreso");
+  contenedorPendientes?.addEventListener("click", procesarIngresoBodega);
   render();
 }
+
+async function procesarIngresoBodega(ev) {
+  const boton = ev.target.closest("button[data-ingresar]");
+  if (!boton) return;
+  ev.preventDefault();
+  ev.stopPropagation();
+  const envio = estado.envios.find((x) => x.codigoGuia === boton.dataset.ingresar);
+  if (!envio || envio.estado !== "registrado") {
+    avisar("La solicitud ya fue procesada", true);
+    return render();
+  }
+  const sucursal = suc(envio.sucursalOrigen)?.nombre || envio.sucursalOrigen;
+  if (!(await confirmar("Ingresar a bodega", `Se recibira ${envio.codigoGuia} en ${sucursal}.`))) return;
+  boton.disabled = true;
+  envio.historial ||= [];
+  envio.historial.push({
+    estadoAnterior: "registrado",
+    estado: "en bodega",
+    fecha: new Date().toISOString(),
+    detalle: envio.envioOrigen
+      ? `Reenvio recibido en bodega; guia original ${envio.envioOrigen}`
+      : "Paquete recibido fisicamente en bodega",
+  });
+  envio.estado = "en bodega";
+  envio.fechaIngresoBodega = new Date().toISOString();
+  if (!guardarEstado(estado)) {
+    envio.estado = "registrado";
+    boton.disabled = false;
+    return avisar("No se pudo guardar el ingreso a bodega", true);
+  }
+  avisar(`Envio ${envio.codigoGuia} ingresado a bodega`);
+  render();
+}
+
 function barras(contenedor, datos) {
   const max = Math.max(1, ...datos.map((x) => x.n));
   contenedor.innerHTML = datos
@@ -38,10 +76,12 @@ function barras(contenedor, datos) {
 }
 function render() {
   const pendientes = estado.envios.filter((e) => e.estado === "registrado");
-    totalPendientesIngreso.textContent = `${pendientes.length} ${pendientes.length === 1 ? "pendiente" : "pendientes"}`;
-    pendientesIngreso.innerHTML = pendientes.length ? pendientes.map((e) => `<article class="tarjeta pendiente-card"><span class="estado">Registrado</span><h3>${escapar(e.codigoGuia)}</h3>${e.envioOrigen ? `<p><strong>Reenvio de:</strong> ${escapar(e.envioOrigen)}</p>` : ""}<p>${escapar(suc(e.sucursalOrigen)?.nombre || e.sucursalOrigen)} → ${escapar(suc(e.sucursalDestino)?.nombre || e.sucursalDestino)}</p><p>${escapar(e.contenido)} · ${e.pesoFacturable} kg</p><button data-ingresar="${escapar(e.codigoGuia)}">Ingresar a bodega</button></article>`).join("") : `<p class="vacio">No hay paquetes pendientes de recepcion.</p>`;
+  const totalPendientes = document.getElementById("totalPendientesIngreso");
+  const contenedorPendientes = document.getElementById("pendientesIngreso");
+  if (totalPendientes) totalPendientes.textContent = `${pendientes.length} ${pendientes.length === 1 ? "pendiente" : "pendientes"}`;
+  if (contenedorPendientes) contenedorPendientes.innerHTML = pendientes.length ? pendientes.map((e) => `<article class="tarjeta pendiente-card"><span class="estado">Registrado</span><h3>${escapar(e.codigoGuia)}</h3>${e.envioOrigen ? `<p><strong>Reenvio de:</strong> ${escapar(e.envioOrigen)}</p>` : ""}<p>${escapar(suc(e.sucursalOrigen)?.nombre || e.sucursalOrigen)} → ${escapar(suc(e.sucursalDestino)?.nombre || e.sucursalDestino)}</p><p>${escapar(e.contenido)} · ${e.pesoFacturable} kg</p><button data-ingresar="${escapar(e.codigoGuia)}">Ingresar a bodega</button></article>`).join("") : `<p class="vacio">No hay paquetes pendientes de recepcion.</p>`;
     const enInventario = estado.envios.filter(
-      (e) => !["entregado", "devuelto"].includes(e.estado),
+      (e) => !["registrado", "entregado", "devuelto"].includes(e.estado),
     ),
     ocupaciones = catalogo.sucursales.map((s) => {
       const lista = enInventario.filter((e) => ubic(e) === s.codigo),
@@ -69,16 +109,16 @@ function render() {
         (!filtroInventarioEstado.value ||
           e.estado === filtroInventarioEstado.value),
     )
-    .sort((a, b) => new Date(a.fechaRegistro) - new Date(b.fechaRegistro));
+    .sort((a, b) => new Date(a.fechaIngresoBodega || a.fechaRegistro) - new Date(b.fechaIngresoBodega || b.fechaRegistro));
   totalInventario.textContent = `${lista.length} paquetes`;
   tablaInventario.innerHTML = lista.length
     ? lista
         .map((e) => {
-          const dias = diasDesde(e.fechaRegistro),
-            retenido =
-              e.estado === "en bodega" &&
-              dias > estado.configuracion.diasRetencion;
-          return `<tr><td>${e.codigoGuia}</td><td>${ubic(e) === "EN-RUTA" ? "En ruta" : suc(ubic(e))?.nombre}</td><td>${suc(e.sucursalDestino)?.nombre}</td><td>${e.contenido}</td><td>${e.pesoFacturable} kg</td><td>${dias}</td><td>${retenido ? "<strong>RETENIDO: excede permanencia</strong>" : nombre(e.estado)}</td></tr>`;
+          const fechaBase = e.fechaIngresoBodega || e.fechaRegistro,
+            dias = diasDesde(fechaBase),
+            limite = e.contenido === "frio" ? (estado.configuracion.diasRetencionFrio ?? 1) : estado.configuracion.diasRetencion,
+            retenido = e.estado === "en bodega" && dias > limite;
+          return `<tr><td>${e.codigoGuia}</td><td>${ubic(e) === "EN-RUTA" ? "En ruta" : suc(ubic(e))?.nombre}</td><td>${suc(e.sucursalDestino)?.nombre}</td><td>${escapar(e.contenido)}${e.contenido === "frio" ? " <strong>(cadena de frio)</strong>" : ""}</td><td>${e.pesoFacturable} kg</td><td>${dias}</td><td>${retenido ? `<strong>RETENIDO: excede ${limite} dia(s)</strong>` : nombre(e.estado)}</td></tr>`;
         })
         .join("")
     : '<tr><td colspan="7" class="vacio">No hay paquetes.</td></tr>';

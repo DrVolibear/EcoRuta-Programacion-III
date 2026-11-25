@@ -219,7 +219,7 @@ function comparar(ev) {
             `<article class="opcion ${i === 0 ? "recomendada" : ""}"><header><strong>${o.modalidad.nombre}</strong><span>${i === 0 ? "Menor emision" : ""}</span></header><dl><dt>Base</dt><dd>${moneda(o.tarifa.base)}</dd><dt>Peso</dt><dd>${moneda(o.tarifa.peso)}</dd><dt>Distancia</dt><dd>${moneda(o.tarifa.distancia)}</dd><dt>Recargos</dt><dd>${moneda(Object.values(o.tarifa.recargos).reduce((a, b) => a + b, 0))}</dd><dt>Descuento</dt><dd>${moneda(o.tarifa.descuento)}</dd><dt>Total</dt><dd>${moneda(o.tarifa.total)}</dd><dt>Emisiones</dt><dd>${o.emisiones} kg CO2e</dd><dt>Entrega</dt><dd>${Math.max(1, Math.ceil(o.distancia / o.modalidad.velocidadKmH))} h</dd></dl><button data-opcion="${i}">${guiaEdicion.value ? "Guardar correccion" : "Elegir y registrar"}</button></article>`,
         )
         .join("")
-    : '<p class="vacio">No existe modalidad viable.</p>';
+    : `<p class="vacio alerta error">${paquete.contenido === "frio" ? "No existe una modalidad refrigerada compatible con el peso, la distancia y la sucursal de origen." : "No existe modalidad viable para el peso, dimensiones, distancia y sucursal seleccionados."}</p>`;
 }
 function confirmarOpcion(i) {
   const o = opciones[i];
@@ -370,7 +370,7 @@ function accionTabla(ev) {
 function eliminarConfirmado(ev) {
   if (ev.submitter?.value !== "confirm") return;
   ev.preventDefault();
-  if (motivoEliminacion.value.trim().length < 5)
+  if (motivoEliminacion.value.trim().length < 10)
     return motivoEliminacion.reportValidity();
   const e = estado.envios.find((x) => x.codigoGuia === guiaEliminar);
   estado.enviosEliminados.push({
@@ -378,11 +378,15 @@ function eliminarConfirmado(ev) {
     motivoEliminacion: motivoEliminacion.value.trim(),
     fechaEliminacion: new Date().toISOString(),
   });
+  estado.rutas.forEach((ruta) => {
+    ruta.envios = (ruta.envios || []).filter((guia) => guia !== guiaEliminar);
+  });
   estado.envios = estado.envios.filter((x) => x.codigoGuia !== guiaEliminar);
   guardarEstado(estado);
   dialogoEliminarEnvio.close();
   renderEnvios();
   actualizar();
+  document.dispatchEvent(new Event("inventarioActualizado"));
   avisar("Envio eliminado; la guia no se reutilizara");
 }
 function lista() {
