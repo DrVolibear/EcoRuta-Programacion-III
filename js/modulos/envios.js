@@ -1,115 +1,233 @@
+// M1 + M5: registro de solicitudes, comparación de modalidades y tabla de envíos.
 import { guardarEstado } from "../persistencia.js";
 import { obtenerDistancia } from "../catalogo.js";
 import {
-  moneda,
+  ESTADOS,
+  ESTADO_CANCELADO,
+  ESTADOS_ACTIVOS,
+  DIMENSION_MAX_ABSOLUTA_CM,
+  puedeCancelarse,
+  clasificarEnvio,
   pesoVolumetrico,
+  esSobredimensionado,
   modalidadesViables,
   calcularTarifa,
   calcularEmisiones,
+  emisionesEvitadasLimpias,
+  moneda,
 } from "../reglas.js";
 import { validarEnvioFormulario } from "../validaciones.js";
-import { normalizarTexto, fechaLocal, escapar } from "../utilidades.js";
-import { ESTADOS } from "./seguimiento.js";
-let estado,
-  catalogo,
-  avisar,
-  actualizar,
-  confirmar,
-  opciones = [],
-  pagina = 1,
-  orden = { campo: "fecha", direccion: "desc" },
-  guiaDetalle = "",
-  guiaEliminar = "",
-  guiaOrigenReenvio = "",
-    firmaComparacion = "";
-const $ = (s) => document.querySelector(s),
-  suc = (c) => catalogo.sucursales.find((s) => s.codigo === c),
-  mod = (c) => catalogo.modalidades.find((m) => m.codigo === c),
-  nombreEstado = (e) => e.replace(/(^| )\S/g, (l) => l.toUpperCase());
-export function iniciarEnvios(e, c, a, u, co) {
+import { normalizarTexto, fechaLocal, escapar, etiquetaEstado, hoyISO } from "../utilidades.js";
+import { activarValidacion, vincularRangoFechas } from "../formularios.js";
+import { abrirDialogo, solicitarCancelacion } from "../modales.js";
+import { imprimir } from "../impresion.js";
+import { consultarGuia } from "./seguimiento.js";
+import {
+  htmlFichaEnvio,
+  htmlDesglose,
+  htmlDimensiones,
+  htmlEstado,
+  etiquetaContenido,
+} from "../plantillas.js";
+
+const IDS = [
+  "formEnvio",
+  "guiaEdicion",
+  "buscarRemitente",
+  "remitente",
+  "datosRemitente",
+  "buscarDestinatario",
+  "destinatario",
+  "datosDestinatario",
+  "origen",
+  "destino",
+  "peso",
+  "largo",
+  "ancho",
+  "alto",
+  "contenido",
+  "urgente",
+  "autorizacionSobredimension",
+  "responsableAutorizacion",
+  "etiquetaResponsable",
+  "btnComparar",
+  "cancelarEdicionEnvio",
+  "comparacion",
+  "tablaEnvios",
+  "buscarEnvio",
+  "filtroModalidadEnvio",
+  "filtroEstadoEnvio",
+  "filtroSucursalEnvio",
+  "filtroFechaDesde",
+  "filtroFechaHasta",
+  "cantidadEnviosPagina",
+  "limpiarFiltrosEnvios",
+  "paginaAnteriorEnvios",
+  "paginaSiguienteEnvios",
+  "informacionPaginaEnvios",
+  "contadorSolicitudes",
+  "conteoActivos",
+  "conteoCancelados",
+  "conteoHistoricos",
+  "conteoTotal",
+  "dialogoEnvio",
+  "tituloDetalleEnvio",
+  "contenidoDetalleEnvio",
+  "cerrarDetalleEnvio",
+  "imprimirDetalleEnvio",
+  "irSeguimientoEnvio",
+];
+
+let estado, catalogo, avisar, actualizar;
+let el = {};
+let opciones = []; // modalidades calculadas en la última comparación
+let firmaComparacion = ""; // datos del formulario con los que se calcularon
+let guiaOrigenReenvio = "";
+let guiaDetalle = "";
+let pagina = 1;
+let orden = { campo: "fecha", direccion: "desc" };
+let validacion;
+let rangoFechas;
+
+const sucursal = (codigo) => catalogo.sucursales.find((s) => s.codigo === codigo);
+const modalidad = (codigo) => catalogo.modalidades.find((m) => m.codigo === codigo);
+const cliente = (id) => estado.clientes.find((c) => c.id === id);
+const nombreCliente = (id) => cliente(id)?.nombre ?? "No disponible";
+const envioPorGuia = (guia) => estado.envios.find((e) => e.codigoGuia === guia);
+const contexto = () => ({ estado, catalogo });
+const reenvioActivo = (guia) =>
+  estado.envios.find((e) => e.envioOrigen === guia && ESTADOS_ACTIVOS.includes(e.estado));
+
+/* ---------- Arranque ---------- */
+
+/** Enlaza el formulario de solicitud, la comparación y la tabla de envíos. */
+export function iniciarEnvios(e, c, a, u) {
   estado = e;
   catalogo = c;
   avisar = a;
   actualizar = u;
-  confirmar = co;
-  formEnvio.addEventListener("submit", comparar);
-    formEnvio.addEventListener("input", invalidarComparacion);
-    formEnvio.addEventListener("change", invalidarComparacion);
-  comparacion.addEventListener("click", (ev) => {
-    const b = ev.target.closest("button[data-opcion]");
-    if (b) confirmarOpcion(+b.dataset.opcion);
+  el = Object.fromEntries(IDS.map((id) => [id, document.getElementById(id)]));
+
+  // Los límites del formulario salen del catálogo, no del HTML
+  const { reglas } = catalogo;
+  el.peso.min = reglas.pesoMinKg;
+  el.peso.max = reglas.pesoMaxKg;
+  [el.largo, el.ancho, el.alto].forEach((campo) => (campo.max = DIMENSION_MAX_ABSOLUTA_CM));
+
+  construirFiltros();
+  configurarValidacion();
+  rangoFechas = vincularRangoFechas(el.filtroFechaDesde, el.filtroFechaHasta, {
+    hoy: hoyISO(),
+    avisar,
   });
-  tablaEnvios.addEventListener("click", accionTabla);
-  document.querySelectorAll(".orden-columna").forEach((b) =>
-    b.addEventListener("click", () => {
+
+  el.formEnvio.addEventListener("submit", comparar);
+  // Cualquier cambio en los datos obliga a comparar de nuevo
+  el.formEnvio.addEventListener("input", invalidarComparacion);
+  el.formEnvio.addEventListener("change", invalidarComparacion);
+  el.autorizacionSobredimension.addEventListener("change", sincronizarResponsable);
+  el.comparacion.addEventListener("click", (ev) => {
+    const boton = ev.target.closest("button[data-opcion]");
+    if (boton) confirmarOpcion(Number(boton.dataset.opcion));
+  });
+
+  // Delegación de eventos: un único escuchador atiende los botones de todas las filas
+  el.tablaEnvios.addEventListener("click", accionTabla);
+  document.querySelectorAll(".orden-columna").forEach((boton) =>
+    boton.addEventListener("click", () => {
       orden =
-        orden.campo === b.dataset.orden
-          ? {
-              campo: orden.campo,
-              direccion: orden.direccion === "asc" ? "desc" : "asc",
-            }
-          : { campo: b.dataset.orden, direccion: "asc" };
+        orden.campo === boton.dataset.orden
+          ? { campo: orden.campo, direccion: orden.direccion === "asc" ? "desc" : "asc" }
+          : { campo: boton.dataset.orden, direccion: "asc" };
       pagina = 1;
       renderEnvios();
     }),
   );
   [
-    buscarEnvio,
-    filtroModalidadEnvio,
-    filtroEstadoEnvio,
-    filtroSucursalEnvio,
-    filtroFechaDesde,
-    filtroFechaHasta,
-    cantidadEnviosPagina,
-  ].forEach((x) =>
-    x.addEventListener(x === buscarEnvio ? "input" : "change", () => {
+    el.buscarEnvio,
+    el.filtroModalidadEnvio,
+    el.filtroEstadoEnvio,
+    el.filtroSucursalEnvio,
+    el.filtroFechaDesde,
+    el.filtroFechaHasta,
+    el.cantidadEnviosPagina,
+  ].forEach((control) =>
+    control.addEventListener(control === el.buscarEnvio ? "input" : "change", () => {
       pagina = 1;
       renderEnvios();
     }),
   );
-  limpiarFiltrosEnvios.onclick = limpiarFiltros;
-  paginaAnteriorEnvios.onclick = () => {
+  el.limpiarFiltrosEnvios.addEventListener("click", limpiarFiltros);
+  el.paginaAnteriorEnvios.addEventListener("click", () => {
     if (pagina > 1) {
       pagina--;
       renderEnvios();
     }
-  };
-  paginaSiguienteEnvios.onclick = () => {
+  });
+  el.paginaSiguienteEnvios.addEventListener("click", () => {
     pagina++;
     renderEnvios();
-  };
-  cancelarEdicionEnvio.onclick = cancelarEdicion;
-  cerrarDetalleEnvio.onclick = () => dialogoEnvio.close();
-  imprimirDetalleEnvio.onclick = () => print();
-  irSeguimientoEnvio.onclick = () => {
-    dialogoEnvio.close();
-    guiaSeguimiento.value = guiaDetalle;
-    document.querySelector('[data-vista="seguimiento"]').click();
-    formSeguimiento.requestSubmit();
-  };
-  formEliminarEnvio.addEventListener("submit", eliminarConfirmado);
-    motivoEliminacion.addEventListener("input", actualizarMotivo);
-  buscarRemitente.addEventListener("input", () =>
-    cargarClientes("remitente", buscarRemitente.value),
+  });
+  el.cancelarEdicionEnvio.addEventListener("click", cancelarEdicion);
+
+  el.cerrarDetalleEnvio.addEventListener("click", () => el.dialogoEnvio.close());
+  el.imprimirDetalleEnvio.addEventListener("click", imprimirFicha);
+  el.irSeguimientoEnvio.addEventListener("click", irASeguimiento);
+  el.contenidoDetalleEnvio.addEventListener("click", (ev) => {
+    const enlace = ev.target.closest("[data-ir-guia]");
+    if (enlace) abrirDetalleEnvio(enlace.dataset.irGuia);
+  });
+
+  el.buscarRemitente.addEventListener("input", () =>
+    cargarClientes("remitente", el.buscarRemitente.value),
   );
-  buscarDestinatario.addEventListener("input", () =>
-    cargarClientes("destinatario", buscarDestinatario.value),
+  el.buscarDestinatario.addEventListener("input", () =>
+    cargarClientes("destinatario", el.buscarDestinatario.value),
   );
+  el.remitente.addEventListener("change", () => mostrarDatosCliente("remitente"));
+  el.destinatario.addEventListener("change", () => mostrarDatosCliente("destinatario"));
+
+  // Otros módulos avisan cuando cambian el estado de un envío
+  document.addEventListener("envioActualizado", (ev) => ev.detail.guias.forEach(actualizarFila));
+
   actualizarSelectores();
   renderEnvios();
 }
-function cargarClientes(id, q = "") {
-  const sel = document.getElementById(id),
-    actual = sel.value,
-    texto = normalizarTexto(q),
-    lista = estado.clientes.filter(
-      (c) =>
-        c.activo &&
-        normalizarTexto(
-          [c.nombre, c.identificacion, c.correo].join(" "),
-        ).includes(texto),
-    );
-  sel.innerHTML =
+
+/* ---------- Selectores ---------- */
+
+/** Llena los selectores de sucursal, modalidad y estado con datos del catálogo. */
+function construirFiltros() {
+  const opcionesSucursal = catalogo.sucursales
+    .map((s) => `<option value="${s.codigo}">${escapar(s.nombre)}</option>`)
+    .join("");
+  el.origen.innerHTML = `<option value="">Seleccione</option>${opcionesSucursal}`;
+  el.destino.innerHTML = `<option value="">Seleccione</option>${opcionesSucursal}`;
+  el.filtroSucursalEnvio.innerHTML = `<option value="">Todas</option>${opcionesSucursal}`;
+  el.filtroModalidadEnvio.innerHTML =
+    '<option value="">Todas</option>' +
+    catalogo.modalidades
+      .map((m) => `<option value="${m.codigo}">${escapar(m.nombre)}</option>`)
+      .join("");
+  // Filtro histórico: incluye Cancelado (el inventario operativo no lo incluye)
+  el.filtroEstadoEnvio.innerHTML =
+    '<option value="">Todos</option>' +
+    [...ESTADOS, ESTADO_CANCELADO]
+      .map((e) => `<option value="${e}">${etiquetaEstado(e)}</option>`)
+      .join("");
+}
+
+/** Solo los clientes activos se pueden usar en solicitudes nuevas. */
+function cargarClientes(id, busqueda = "", forzarIds = []) {
+  const selector = document.getElementById(id);
+  const actual = selector.value;
+  const texto = normalizarTexto(busqueda);
+  const lista = estado.clientes.filter(
+    (c) =>
+      (c.estado === "activo" || forzarIds.includes(c.id)) &&
+      normalizarTexto([c.nombre, c.identificacion, c.correo].join(" ")).includes(texto),
+  );
+  selector.innerHTML =
     '<option value="">Seleccione</option>' +
     lista
       .map(
@@ -117,168 +235,327 @@ function cargarClientes(id, q = "") {
           `<option value="${c.id}">${escapar(c.nombre)} (${escapar(c.identificacion)})</option>`,
       )
       .join("");
-  if (lista.some((c) => c.id === actual)) sel.value = actual;
+  if (lista.some((c) => c.id === actual)) selector.value = actual;
+  mostrarDatosCliente(id);
 }
+
+/** RF-10: al elegir un cliente se ven sus datos, sin volver a capturarlos. */
+function mostrarDatosCliente(id) {
+  const c = cliente(document.getElementById(id).value);
+  document.getElementById(id === "remitente" ? "datosRemitente" : "datosDestinatario").textContent =
+    c ? `${c.telefono} · ${c.correo} · ${c.provincia}` : "";
+}
+
+/** Rehace las listas de remitente y destinatario según el texto de búsqueda de cada una. */
 export function actualizarSelectores() {
   if (!estado || !catalogo) return;
-  cargarClientes("remitente");
-  cargarClientes("destinatario");
-  const su =
-    '<option value="">Seleccione</option>' +
-    catalogo.sucursales
-      .map((s) => `<option value="${s.codigo}">${s.nombre}</option>`)
-      .join("");
-  origen.innerHTML = su;
-  destino.innerHTML = su;
-  filtroSucursalEnvio.innerHTML =
-    '<option value="">Todas</option>' +
-    catalogo.sucursales
-      .map((s) => `<option value="${s.codigo}">${s.nombre}</option>`)
-      .join("");
-  filtroModalidadEnvio.innerHTML =
-    '<option value="">Todas</option>' +
-    catalogo.modalidades
-      .map((m) => `<option value="${m.codigo}">${m.nombre}</option>`)
-      .join("");
-  filtroEstadoEnvio.innerHTML =
-    '<option value="">Todos</option>' +
-    [...ESTADOS,"cancelado"].filter((v,i,a)=>a.indexOf(v)===i).map((e) => `<option value="${e}">${nombreEstado(e)}</option>`).join(
-      "",
-    );
+  cargarClientes("remitente", el.buscarRemitente.value);
+  cargarClientes("destinatario", el.buscarDestinatario.value);
 }
+
+/* ---------- Validación del formulario ---------- */
+
+const dimension = (nombre) => (campo) =>
+  campo.validity.valueMissing
+    ? `Indique el ${nombre} en cm.`
+    : campo.validity.rangeUnderflow
+      ? "La dimensión mínima es 1 cm."
+      : campo.validity.rangeOverflow
+        ? `El ${nombre} no puede superar ${campo.max} cm.`
+        : "Las dimensiones deben ser números enteros.";
+
+const MENSAJE_RESPONSABLE = "Indique el responsable que autorizó la sobredimensión.";
+
+/** Mensajes en español por campo y reglas de negocio que se evalúan junto a la validación nativa. */
+function configurarValidacion() {
+  let avisoPendiente = false;
+  validacion = activarValidacion(
+    el.formEnvio,
+    {
+      remitente: () => "Seleccione el remitente.",
+      destinatario: () => "Seleccione el destinatario.",
+      origen: () => "Seleccione la sucursal de origen.",
+      destino: () => "Seleccione la sucursal de destino.",
+      peso: (c) =>
+        c.validity.valueMissing || c.validity.badInput
+          ? "Indique el peso real en kg."
+          : c.validity.rangeUnderflow
+            ? `El peso mínimo es ${c.min} kg.`
+            : c.validity.rangeOverflow
+              ? `El peso máximo es ${c.max} kg.`
+              : "Use como máximo un decimal (por ejemplo 12.5).",
+      largo: dimension("largo"),
+      ancho: dimension("ancho"),
+      alto: dimension("alto"),
+      responsableAutorizacion: () => MENSAJE_RESPONSABLE,
+    },
+    {
+      extras: {
+        // El navegador acepta "   " como valor presente: aquí se rechaza
+        responsableAutorizacion: (c) =>
+          el.autorizacionSobredimension.checked && !c.value.trim() ? MENSAJE_RESPONSABLE : "",
+        destinatario: (c) =>
+          c.value && c.value === el.remitente.value
+            ? "El remitente y el destinatario deben ser clientes diferentes."
+            : "",
+        destino: (c) =>
+          c.value && c.value === el.origen.value
+            ? "La sucursal de origen y la de destino deben ser diferentes."
+            : "",
+      },
+      // Se avisa solo del primer campo inválido, para no apilar notificaciones
+      alInvalido: (_campo, mensaje) => {
+        if (avisoPendiente) return;
+        avisoPendiente = true;
+        avisar(mensaje, true);
+        setTimeout(() => (avisoPendiente = false));
+      },
+    },
+  );
+}
+
+/** Si la casilla está marcada, el responsable se habilita y es obligatorio; si no, se limpia. */
+function sincronizarResponsable() {
+  const marcada = el.autorizacionSobredimension.checked;
+  el.responsableAutorizacion.disabled = !marcada;
+  el.responsableAutorizacion.required = marcada;
+  if (!marcada) el.responsableAutorizacion.value = "";
+  el.etiquetaResponsable.textContent = marcada
+    ? "Responsable de autorización *"
+    : "Responsable de autorización";
+}
+
+/** Todos los datos que influyen en el cálculo (punto 4). */
 function datosFormulario() {
   return {
-    remitente: remitente.value,
-    destinatario: destinatario.value,
-    origen: origen.value,
-    destino: destino.value,
-    pesoReal: +peso.value,
-    largo: +largo.value,
-    ancho: +ancho.value,
-    alto: +alto.value,
-    contenido: contenido.value,
-    urgente: urgente.checked,
+    remitente: el.remitente.value,
+    destinatario: el.destinatario.value,
+    origen: el.origen.value,
+    destino: el.destino.value,
+    pesoReal: Number(el.peso.value),
+    largo: Number(el.largo.value),
+    ancho: Number(el.ancho.value),
+    alto: Number(el.alto.value),
+    contenido: el.contenido.value,
+    urgente: el.urgente.checked,
+    sobredimensionMarcada: el.autorizacionSobredimension.checked,
+    responsableAutorizacion: el.responsableAutorizacion.value.trim(),
   };
 }
-function firmaActual(){const d=datosFormulario();return JSON.stringify({...d,responsableAutorizacion:(d.responsableAutorizacion||"").trim()})}
-function invalidarComparacion(){if(!opciones.length)return;opciones=[];firmaComparacion="";comparacion.innerHTML='<p class="vacio alerta">Los datos cambiaron. Vuelva a comparar las modalidades.</p>'}
-function actualizarMotivo(){const n=motivoEliminacion.value.trim().length;contadorMotivoEliminacion.textContent=`${Math.min(n,10)}/10`;confirmarEliminacionEnvio.disabled=n<10}
+const firmaActual = () => JSON.stringify(datosFormulario());
+
+const MENSAJE_CAMBIO = "Los datos cambiaron. Vuelva a comparar las modalidades.";
+
+/** Si los datos ya no coinciden con los comparados, se descartan las opciones calculadas. */
+function invalidarComparacion() {
+  if (!firmaComparacion || firmaComparacion === firmaActual()) return;
+  opciones = [];
+  firmaComparacion = "";
+  el.comparacion.innerHTML = `<p class="vacio alerta">${MENSAJE_CAMBIO}</p>`;
+}
+
+/** Descarta las opciones calculadas: cualquier cambio en el formulario obliga a comparar de nuevo. */
+function limpiarComparacion(mensaje = "Complete el formulario.") {
+  opciones = [];
+  firmaComparacion = "";
+  el.comparacion.innerHTML = `<p class="vacio">${escapar(mensaje)}</p>`;
+}
+
+/** Muestra un error de regla de negocio junto a su campo y limpia la comparación. */
+function rechazar({ campo, mensaje }) {
+  limpiarComparacion("Corrija los datos indicados para comparar.");
+  if (el[campo]) validacion.marcar(el[campo], mensaje);
+  avisar(mensaje, true);
+}
+
+/* ---------- Comparación de modalidades (RF-21 a RF-23) ---------- */
+
+/** Valida la solicitud y calcula tarifa y emisiones de cada modalidad viable (RF-21 a RF-23). */
 function comparar(ev) {
   ev.preventDefault();
-  const d = datosFormulario(),
-    errores = validarEnvioFormulario(d, catalogo.reglas);
-  if (errores.length) return avisar(errores[0], true);
+  const datos = datosFormulario();
+  const errores = validarEnvioFormulario(datos, catalogo.reglas);
+  if (errores.length) return rechazar(errores[0]);
+
   let distancia;
   try {
-    distancia = obtenerDistancia(catalogo, d.origen, d.destino);
-  } catch (e) {
-    return avisar(e.message, true);
+    distancia = obtenerDistancia(catalogo, datos.origen, datos.destino);
+  } catch (error) {
+    return avisar(error.message, true);
   }
-  const sobredimension = [d.largo, d.ancho, d.alto].some(
-    (x) => x > catalogo.reglas.dimensionMaxCm,
-  );
-  if (
-    sobredimension &&
-    (!autorizacionSobredimension.checked ||
-      !responsableAutorizacion.value.trim())
-  )
-    return avisar(
-      "La sobredimension requiere autorizacion y responsable",
-      true,
-    );
+
+  const dimensiones = { largo: datos.largo, ancho: datos.ancho, alto: datos.alto };
   const pv = pesoVolumetrico(
-      d.largo,
-      d.ancho,
-      d.alto,
-      catalogo.reglas.divisorVolumetrico,
-    ),
-    paquete = {
-      pesoReal: d.pesoReal,
-      pesoVolumetrico: pv,
-      pesoFacturable: Math.max(d.pesoReal, pv),
-      dimensiones: { largo: d.largo, ancho: d.ancho, alto: d.alto },
-      contenido: d.contenido,
-      urgente: d.urgente,
-      sobredimension,
-      autorizacionSobredimension: sobredimension
-        ? {
-            autorizada: true,
-            responsable: responsableAutorizacion.value.trim(),
-          }
-        : null,
-    };
-  opciones = modalidadesViables(catalogo, paquete, suc(d.origen), distancia)
+    datos.largo,
+    datos.ancho,
+    datos.alto,
+    catalogo.reglas.divisorVolumetrico,
+  );
+  const paquete = {
+    pesoReal: datos.pesoReal,
+    pesoVolumetrico: pv,
+    pesoFacturable: Math.max(datos.pesoReal, pv), // RN-01
+    dimensiones,
+    contenido: datos.contenido,
+    urgente: datos.urgente,
+    sobredimension: esSobredimensionado(dimensiones, catalogo.reglas),
+    autorizacionSobredimension: datos.sobredimensionMarcada
+      ? { autorizada: true, responsable: datos.responsableAutorizacion }
+      : null,
+  };
+  const origenSucursal = sucursal(datos.origen);
+  opciones = modalidadesViables(catalogo, paquete, origenSucursal, distancia)
     .map((m) => ({
       modalidad: m,
-      tarifa: calcularTarifa(catalogo, suc(d.origen), paquete, distancia, m),
+      tarifa: calcularTarifa(catalogo, origenSucursal, paquete, distancia, m),
       emisiones: calcularEmisiones(distancia, paquete.pesoFacturable, m),
       paquete,
       distancia,
-      origen: d.origen,
-      destino: d.destino,
+      origen: datos.origen,
+      destino: datos.destino,
     }))
-    .sort((a, b) => a.emisiones - b.emisiones);
-  firmaComparacion = firmaActual();
-  comparacion.innerHTML = opciones.length
-    ? `<p><strong>Peso real:</strong> ${paquete.pesoReal} kg · <strong>Peso volumetrico:</strong> ${paquete.pesoVolumetrico} kg · <strong>Peso facturable:</strong> ${paquete.pesoFacturable} kg · <strong>Distancia:</strong> ${distancia} km</p>` +
-      opciones
-        .map(
-          (o, i) =>
-            `<article class="opcion ${i === 0 ? "recomendada" : ""}"><header><strong>${o.modalidad.nombre}</strong><span>${i === 0 ? "Menor emision" : ""}</span></header><dl><dt>Base</dt><dd>${moneda(o.tarifa.base)}</dd><dt>Peso</dt><dd>${moneda(o.tarifa.peso)}</dd><dt>Distancia</dt><dd>${moneda(o.tarifa.distancia)}</dd>${Object.entries(o.tarifa.recargos).map(([k,v])=>`<dt>Recargo ${k}</dt><dd>${moneda(v)}${v?` (${Math.round((catalogo.recargos[k]||0)*100)}%)`:""}</dd>`).join("")}<dt>Descuento</dt><dd>${moneda(o.tarifa.descuento)}</dd><dt>Total</dt><dd>${moneda(o.tarifa.total)}</dd><dt>Emisiones</dt><dd>${o.emisiones} kg CO2e</dd><dt>Entrega</dt><dd>${Math.max(1, Math.ceil(o.distancia / o.modalidad.velocidadKmH))} h</dd></dl><button data-opcion="${i}">${guiaEdicion.value ? "Guardar correccion" : "Elegir y registrar"}</button></article>`,
-        )
-        .join("")
-    : `<p class="vacio alerta error">${paquete.contenido === "frio" ? "No existe una modalidad refrigerada compatible con el peso, la distancia y la sucursal de origen." : "No existe modalidad viable para el peso, dimensiones, distancia y sucursal seleccionados."}</p>`;
+    .sort((a, b) => a.emisiones - b.emisiones); // la primera es la de menor emisión
+  firmaComparacion = JSON.stringify(datos);
+
+  el.comparacion.innerHTML =
+    htmlResumenSolicitud(datos, paquete, distancia) +
+    (opciones.length
+      ? opciones.map(htmlOpcion).join("")
+      : `<p class="vacio alerta error">${
+          paquete.contenido === "frio"
+            ? "No existe una modalidad refrigerada compatible con el peso, la distancia y la sucursal de origen."
+            : "No existe modalidad viable para el peso, las dimensiones, la distancia y la sucursal seleccionados."
+        }</p>`);
 }
-function confirmarOpcion(i) {
-  const o = opciones[i];
-  if (!o) return;
-  if(!formEnvio.checkValidity()){formEnvio.reportValidity();return avisar("Corrija los datos del formulario antes de registrar",true)}
-  const errores=validarEnvioFormulario(datosFormulario(),catalogo.reglas);if(errores.length)return avisar(errores[0],true);
-  if(firmaComparacion!==firmaActual())return avisar("Los datos cambiaron. Compare nuevamente las modalidades antes de registrar.",true);
-  const existente = estado.envios.find(
-    (e) => e.codigoGuia === guiaEdicion.value,
-  );
+
+/** RF-06: resumen de la solicitud antes de confirmar. */
+function htmlResumenSolicitud(datos, paquete, distancia) {
+  const dato = (etiqueta, valor) => `<div class="dato"><dt>${etiqueta}</dt><dd>${valor}</dd></div>`;
+  return `<section class="resumen-solicitud"><h3>Resumen de la solicitud</h3><dl class="datos">${dato(
+    "Remitente",
+    escapar(nombreCliente(datos.remitente)),
+  )}${dato("Destinatario", escapar(nombreCliente(datos.destinatario)))}${dato(
+    "Trayecto",
+    `${escapar(sucursal(datos.origen).nombre)} → ${escapar(sucursal(datos.destino).nombre)} (${distancia} km)`,
+  )}${dato("Contenido", escapar(etiquetaContenido(datos.contenido)))}${dato(
+    "Largo × Ancho × Alto",
+    htmlDimensiones(paquete.dimensiones),
+  )}${dato("Peso real", `${paquete.pesoReal} kg`)}${dato("Peso volumétrico", `${paquete.pesoVolumetrico} kg`)}${dato(
+    "Peso facturable",
+    `<strong>${paquete.pesoFacturable} kg</strong>`,
+  )}${dato("Urgencia", datos.urgente ? "Urgente" : "Normal")}${dato(
+    "Sobredimensión",
+    paquete.sobredimension ? "Sí (recargo aplicado)" : "No",
+  )}${
+    datos.sobredimensionMarcada
+      ? dato("Responsable de autorización", escapar(datos.responsableAutorizacion))
+      : ""
+  }</dl><p class="nota">El peso facturable es el mayor entre el peso real y el volumétrico.</p></section>`;
+}
+
+/** Tarjeta de una opción de modalidad con su desglose de tarifa y emisiones. */
+function htmlOpcion(o, i) {
+  const horas = Math.max(1, Math.ceil(o.distancia / o.modalidad.velocidadKmH));
+  const comoEnvio = {
+    tarifa: o.tarifa,
+    pesoFacturable: o.paquete.pesoFacturable,
+    distanciaKm: o.distancia,
+    urgente: o.paquete.urgente,
+    contenido: o.paquete.contenido,
+    sobredimension: o.paquete.sobredimension,
+    modalidad: o.modalidad.codigo,
+  };
+  return `<article class="opcion ${i === 0 ? "recomendada" : ""}">
+<header><strong>${escapar(o.modalidad.nombre)}</strong>${i === 0 ? '<span class="etiqueta-menor">Menor emisión</span>' : ""}</header>
+<dl class="datos"><div class="dato"><dt>Total</dt><dd><strong>${moneda(o.tarifa.total)}</strong></dd></div><div class="dato"><dt>Emisiones</dt><dd>${o.emisiones} kg CO₂e</dd></div><div class="dato"><dt>Entrega estimada</dt><dd>${horas} h</dd></div></dl>
+<details ${i === 0 ? "open" : ""}><summary>Desglose de la tarifa</summary>${htmlDesglose(catalogo, comoEnvio)}</details>
+<button type="button" data-opcion="${i}">${el.guiaEdicion.value ? "Guardar corrección" : "Elegir y registrar"}</button>
+</article>`;
+}
+
+/* ---------- Registro y corrección (RF-01, RF-02, RF-08, RF-23) ---------- */
+
+/** Registra o corrige la solicitud solo si los datos actuales son exactamente los que se compararon. */
+function confirmarOpcion(indice) {
+  const opcion = opciones[indice];
+  if (!opcion) return;
+
+  // 1. Validación nativa del formulario tal como está ahora
+  validacion.evaluarTodos();
+  if (!el.formEnvio.checkValidity()) {
+    el.formEnvio.reportValidity();
+    return avisar("Corrija los datos del formulario antes de registrar.", true);
+  }
+  // 2. Reglas de negocio con los datos actuales
+  const errores = validarEnvioFormulario(datosFormulario(), catalogo.reglas);
+  if (errores.length) return rechazar(errores[0]);
+  // 3. Los datos actuales deben ser exactamente los que se compararon
+  if (firmaComparacion !== firmaActual()) {
+    invalidarComparacion();
+    return avisar(MENSAJE_CAMBIO, true);
+  }
+
+  const existente = envioPorGuia(el.guiaEdicion.value);
+  if (!existente) {
+    // Solicitud nueva o reenvío: los clientes deben estar activos
+    for (const id of [el.remitente.value, el.destinatario.value]) {
+      const c = cliente(id);
+      if (c?.estado !== "activo")
+        return avisar(
+          `El cliente ${c?.nombre ?? ""} está ${c?.estado ?? "no disponible"} y no puede usarse en registros nuevos.`,
+          true,
+        );
+    }
+    // Punto 7: un solo reenvío activo por guía original
+    const activo = guiaOrigenReenvio && reenvioActivo(guiaOrigenReenvio);
+    if (activo) return avisar(`Ya existe un reenvío activo: ${activo.codigoGuia}`, true);
+  }
+
+  const datos = datosFormulario();
+  const ahora = new Date().toISOString();
+  const responsable = opcion.paquete.autorizacionSobredimension?.responsable;
+  const anotaciones = [
+    responsable ? `sobredimensión autorizada por ${responsable}` : "",
+    opcion === opciones[0] ? "" : "el agente no eligió la modalidad de menor emisión",
+  ].filter(Boolean);
+  const campos = {
+    clienteRemitente: datos.remitente,
+    clienteDestinatario: datos.destinatario,
+    sucursalOrigen: opcion.origen,
+    sucursalDestino: opcion.destino,
+    ...opcion.paquete,
+    distanciaKm: opcion.distancia,
+    modalidad: opcion.modalidad.codigo,
+    tarifa: opcion.tarifa,
+    emisionesKgCO2e: opcion.emisiones,
+    // RF-23: se registra cuál era la de menor emisión y si el agente la eligió
+    modalidadMenorEmision: opciones[0].modalidad.codigo,
+    eligioMenorEmision: opcion === opciones[0],
+  };
+
+  let guia;
   if (existente) {
     if (existente.estado !== "registrado")
-      return avisar("Solo se corrigen envios registrados", true);
-    Object.assign(existente, {
-      clienteRemitente: remitente.value,
-      clienteDestinatario: destinatario.value,
-      sucursalOrigen: o.origen,
-      sucursalDestino: o.destino,
-      ...o.paquete,
-      distanciaKm: o.distancia,
-      modalidad: o.modalidad.codigo,
-      tarifa: o.tarifa,
-      emisionesKgCO2e: o.emisiones,
-      fechaModificacion: new Date().toISOString(),
-    });
+      return avisar("Solo se corrigen envíos registrados.", true);
+    Object.assign(existente, campos, { fechaModificacion: ahora });
     existente.historial.push({
       estadoAnterior: "registrado",
       estado: "registrado",
-      fecha: new Date().toISOString(),
-      detalle: "Solicitud corregida conservando la guia",
+      fecha: ahora,
+      detalle: ["Solicitud corregida conservando la guía", ...anotaciones].join("; "),
     });
-    avisar(`Envio ${existente.codigoGuia} corregido`);
+    guia = existente.codigoGuia;
+    avisar(`Envío ${guia} corregido.`);
   } else {
-    const codigo = `ENV-${new Date().getFullYear()}-${String(estado.contadorGuia++).padStart(5, "0")}`,
-      conv = catalogo.modalidades.find((m) => m.codigo === "consolidado"),
-      base = conv
-        ? calcularEmisiones(o.distancia, o.paquete.pesoFacturable, conv)
-        : o.emisiones;
+    guia = `ENV-${new Date().getFullYear()}-${String(estado.contadorGuia++).padStart(5, "0")}`;
     estado.envios.push({
-      codigoGuia: codigo,
-      clienteRemitente: remitente.value,
-      clienteDestinatario: destinatario.value,
-      sucursalOrigen: o.origen,
-      sucursalDestino: o.destino,
-      ...o.paquete,
-      distanciaKm: o.distancia,
-      modalidad: o.modalidad.codigo,
-      tarifa: o.tarifa,
-      emisionesKgCO2e: o.emisiones,
-      emisionesEvitadasLimpiasKgCO2e: +Math.max(0, base - o.emisiones).toFixed(
-        3,
+      codigoGuia: guia,
+      ...campos,
+      emisionesEvitadasLimpiasKgCO2e: emisionesEvitadasLimpias(
+        catalogo,
+        opcion.distancia,
+        opcion.paquete.pesoFacturable,
+        opcion.emisiones,
       ),
       emisionesEvitadasConsolidacionKgCO2e: 0,
       estado: "registrado",
@@ -288,227 +565,387 @@ function confirmarOpcion(i) {
         {
           estadoAnterior: null,
           estado: "registrado",
-          fecha: new Date().toISOString(),
-          detalle: guiaOrigenReenvio
-            ? `Reenvio creado desde ${guiaOrigenReenvio}`
-            : "Solicitud registrada",
+          fecha: ahora,
+          detalle: [
+            guiaOrigenReenvio
+              ? `Reenvío creado desde ${guiaOrigenReenvio}`
+              : "Solicitud registrada",
+            ...anotaciones,
+          ].join("; "),
         },
       ],
-      fechaRegistro: new Date().toISOString(),
+      fechaRegistro: ahora,
     });
-    avisar(`Envio ${codigo} registrado`);
+    avisar(`Envío ${guia} registrado.`);
   }
+
   guardarEstado(estado);
   cancelarEdicion();
   pagina = 1;
-  insertarOActualizarTrasRegistro();
+  insertarFila(guia);
   actualizar();
   document.dispatchEvent(new Event("inventarioActualizado"));
 }
-function insertarOActualizarTrasRegistro() {
-  renderEnvios();
-}
+
+/** Sale del modo edición o reenvío y deja el formulario como solicitud nueva. */
 function cancelarEdicion() {
-  formEnvio.reset();
-  guiaEdicion.value = "";
-  guiaOrigenReenvio = "",
-    firmaComparacion = "";
-  cancelarEdicionEnvio.hidden = true;
-  btnComparar.textContent = "Comparar modalidades";
-  comparacion.innerHTML = '<p class="vacio">Complete el formulario.</p>';
-  opciones = [];
+  el.formEnvio.reset();
+  el.guiaEdicion.value = "";
+  guiaOrigenReenvio = "";
+  el.cancelarEdicionEnvio.hidden = true;
+  el.btnComparar.textContent = "Comparar modalidades";
+  sincronizarResponsable();
+  validacion.reiniciar();
+  limpiarComparacion();
+  actualizarSelectores();
 }
+
+/** Copia un envío al formulario para corregirlo o reenviarlo. */
+function cargarFormulario(e) {
+  limpiarComparacion();
+  cargarClientes("remitente", "", [e.clienteRemitente]);
+  cargarClientes("destinatario", "", [e.clienteDestinatario]);
+  el.remitente.value = e.clienteRemitente;
+  el.destinatario.value = e.clienteDestinatario;
+  mostrarDatosCliente("remitente");
+  mostrarDatosCliente("destinatario");
+  el.origen.value = e.sucursalOrigen;
+  el.destino.value = e.sucursalDestino;
+  el.peso.value = e.pesoReal;
+  el.largo.value = e.dimensiones.largo;
+  el.ancho.value = e.dimensiones.ancho;
+  el.alto.value = e.dimensiones.alto;
+  el.contenido.value = e.contenido;
+  el.urgente.checked = e.urgente;
+  el.autorizacionSobredimension.checked = Boolean(e.autorizacionSobredimension);
+  sincronizarResponsable();
+  el.responsableAutorizacion.value = e.autorizacionSobredimension?.responsable ?? "";
+  validacion.reiniciar();
+  el.cancelarEdicionEnvio.hidden = false;
+  el.formEnvio.scrollIntoView({ behavior: "smooth" });
+}
+
+/* ---------- Acciones de la tabla ---------- */
+
+/** Delegación de eventos: ver detalle, editar, reenviar o cancelar desde cualquier fila. */
 function accionTabla(ev) {
-  const b = ev.target.closest("button[data-accion]");
-  if (!b) return;
-  const e = estado.envios.find((x) => x.codigoGuia === b.dataset.guia);
+  const boton = ev.target.closest("button[data-accion]");
+  if (!boton) return;
+  const e = envioPorGuia(boton.dataset.guia);
   if (!e) return;
-  if (b.dataset.accion === "detalle") return detalle(e);
-  if (b.dataset.accion === "reenviar") {
-      if (e.estado !== "devuelto")
-        return avisar("Solo se reenvian solicitudes devueltas", true);
-      guiaOrigenReenvio = e.codigoGuia;
-      guiaEdicion.value = "";
-      remitente.value = e.clienteRemitente;
-      destinatario.value = e.clienteDestinatario;
-      origen.value = e.sucursalOrigen;
-      destino.value = e.sucursalDestino;
-      peso.value = e.pesoReal;
-      largo.value = e.dimensiones.largo;
-      ancho.value = e.dimensiones.ancho;
-      alto.value = e.dimensiones.alto;
-      contenido.value = e.contenido;
-      urgente.checked = e.urgente;
-      autorizacionSobredimension.checked = !!e.autorizacionSobredimension;
-      responsableAutorizacion.value =
-        e.autorizacionSobredimension?.responsable || "";
-      cancelarEdicionEnvio.hidden = false;
-      btnComparar.textContent = "Comparar para reenviar";
-      comparacion.innerHTML = `<p class="alerta">Reenvio basado en ${e.codigoGuia}. Se generara una guia nueva.</p>`;
-      formEnvio.scrollIntoView({ behavior: "smooth" });
-      return avisar("Datos copiados. Revise y compare las modalidades");
-    }
-    if (b.dataset.accion === "editar") {
-    if (e.estado !== "registrado")
-      return avisar("Solo se editan envios registrados", true);
-    guiaEdicion.value = e.codigoGuia;
-    remitente.value = e.clienteRemitente;
-    destinatario.value = e.clienteDestinatario;
-    origen.value = e.sucursalOrigen;
-    destino.value = e.sucursalDestino;
-    peso.value = e.pesoReal;
-    largo.value = e.dimensiones.largo;
-    ancho.value = e.dimensiones.ancho;
-    alto.value = e.dimensiones.alto;
-    contenido.value = e.contenido;
-    urgente.checked = e.urgente;
-    autorizacionSobredimension.checked = !!e.autorizacionSobredimension;
-    responsableAutorizacion.value =
-      e.autorizacionSobredimension?.responsable || "";
-    cancelarEdicionEnvio.hidden = false;
-    btnComparar.textContent = "Recalcular y guardar";
-    formEnvio.scrollIntoView({ behavior: "smooth" });
+
+  if (boton.dataset.accion === "detalle") return abrirDetalleEnvio(e.codigoGuia, boton);
+
+  if (boton.dataset.accion === "reenviar") {
+    if (e.estado !== "devuelto") return avisar("Solo se reenvían solicitudes devueltas.", true);
+    const activo = reenvioActivo(e.codigoGuia);
+    if (activo) return avisar(`Ya existe un reenvío activo: ${activo.codigoGuia}`, true);
+    cargarFormulario(e);
+    guiaOrigenReenvio = e.codigoGuia;
+    el.guiaEdicion.value = "";
+    el.btnComparar.textContent = "Comparar para reenviar";
+    el.comparacion.innerHTML = `<p class="alerta">Reenvío basado en ${escapar(e.codigoGuia)}. Se generará una guía nueva.</p>`;
+    return avisar("Datos copiados. Revise y compare las modalidades.");
+  }
+
+  if (boton.dataset.accion === "editar") {
+    if (e.estado !== "registrado") return avisar("Solo se editan envíos registrados.", true);
+    cargarFormulario(e);
+    el.guiaEdicion.value = e.codigoGuia;
+    el.btnComparar.textContent = "Recalcular y guardar";
     return;
   }
-  if (b.dataset.accion === "eliminar") {
-    if (["en ruta", "entregado"].includes(e.estado))
-      return avisar("No se elimina un envio en ruta o entregado", true);
-    guiaEliminar = e.codigoGuia;
-    motivoEliminacion.value = "";
-    dialogoEliminarEnvio.showModal();
-    motivoEliminacion.focus();
+
+  if (boton.dataset.accion === "cancelar") cancelarEnvio(e);
+}
+
+/** RF-41 y puntos 9-10: cancelación lógica con resumen, impacto y motivo obligatorio. */
+async function cancelarEnvio(e) {
+  if (!puedeCancelarse(e))
+    return avisar(
+      e.estado === ESTADO_CANCELADO
+        ? "El envío ya está cancelado."
+        : "No se cancela un envío en ruta o entregado.",
+      true,
+    );
+
+  const ruta = e.rutaAsignada ? estado.rutas.find((r) => r.codigo === e.rutaAsignada) : null;
+  const reenvio = reenvioActivo(e.codigoGuia);
+  const dato = (etiqueta, valor) => `<div class="dato"><dt>${etiqueta}</dt><dd>${valor}</dd></div>`;
+  const resumenHTML = `<dl class="datos">${dato("Guía", `<strong>${escapar(e.codigoGuia)}</strong>`)}${dato(
+    "Cliente",
+    `${escapar(nombreCliente(e.clienteRemitente))} → ${escapar(nombreCliente(e.clienteDestinatario))}`,
+  )}${dato("Estado actual", htmlEstado(e.estado))}${dato(
+    "Trayecto",
+    `${escapar(sucursal(e.sucursalOrigen)?.nombre)} → ${escapar(sucursal(e.sucursalDestino)?.nombre)}`,
+  )}${dato(
+    "Relaciones",
+    [
+      ruta ? `Ruta ${escapar(ruta.codigo)}` : "Sin ruta",
+      e.envioOrigen ? `Guía original ${escapar(e.envioOrigen)}` : "",
+      reenvio ? `Reenvío activo ${escapar(reenvio.codigoGuia)}` : "",
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  )}</dl>`;
+  const impacto = [
+    "El envío pasará a estado Cancelado y dejará de aparecer en el inventario y en el despacho.",
+    ruta ? `Se retirará de la ruta ${ruta.codigo}.` : "",
+    e.estado === "en bodega" ? `Se liberarán ${e.pesoFacturable} kg de capacidad en bodega.` : "",
+    reenvio ? `Su reenvío ${reenvio.codigoGuia} sigue activo y no se modifica.` : "",
+    "La guía, el historial y el motivo se conservan para auditoría. La guía no se reutiliza.",
+  ].filter(Boolean);
+
+  const motivo = await solicitarCancelacion({
+    titulo: "Cancelar envío",
+    resumenHTML,
+    impacto,
+    etiquetaConfirmar: "Confirmar cancelación",
+  });
+  if (motivo === null) return; // se cerró el diálogo: no cambia nada ni se notifica
+
+  const ahora = new Date().toISOString();
+  e.estadoAnterior = e.estado;
+  e.estado = ESTADO_CANCELADO;
+  e.fechaCancelacion = ahora;
+  e.motivoCancelacion = motivo;
+  if (ruta) {
+    ruta.envios = ruta.envios.filter((guia) => guia !== e.codigoGuia);
+    e.rutaAnterior = ruta.codigo;
   }
-}
-function eliminarConfirmado(ev) {
-  if (ev.submitter?.value !== "confirm") return;
-  ev.preventDefault();
-  if (motivoEliminacion.value.trim().length < 10)
-    return motivoEliminacion.reportValidity();
-  const e = estado.envios.find((x) => x.codigoGuia === guiaEliminar);
-  estado.enviosEliminados.push({
-    ...e,
-    motivoEliminacion: motivoEliminacion.value.trim(),
-    fechaEliminacion: new Date().toISOString(),
+  e.rutaAsignada = null;
+  e.historial.push({
+    estadoAnterior: e.estadoAnterior,
+    estado: ESTADO_CANCELADO,
+    fecha: ahora,
+    detalle: `Cancelado: ${motivo}`,
   });
-  estado.rutas.forEach((ruta) => {
-    ruta.envios = (ruta.envios || []).filter((guia) => guia !== guiaEliminar);
-  });
-  estado.envios = estado.envios.filter((x) => x.codigoGuia !== guiaEliminar);
   guardarEstado(estado);
-  dialogoEliminarEnvio.close();
-  renderEnvios();
   actualizar();
+  // Avisa a la tabla, al seguimiento, al inventario y al despacho (cada uno actualiza lo suyo)
+  document.dispatchEvent(
+    new CustomEvent("envioActualizado", { detail: { guias: [e.codigoGuia] } }),
+  );
   document.dispatchEvent(new Event("inventarioActualizado"));
-  avisar("Envio cancelado; la guia se conserva para auditoria");
+  document.dispatchEvent(new Event("rutasActualizadas"));
+  avisar(`Envío ${e.codigoGuia} cancelado. La guía se conserva para auditoría.`);
 }
-function sincronizarFechas(){filtroFechaHasta.min=filtroFechaDesde.value||"";filtroFechaDesde.max=filtroFechaHasta.value||"";}
-  function lista() {
-    sincronizarFechas();
-    if(filtroFechaDesde.value&&filtroFechaHasta.value&&filtroFechaHasta.value<filtroFechaDesde.value){avisar("Hasta no puede ser anterior a Desde",true);return [];}
-  const q = normalizarTexto(buscarEnvio.value),
-    desde = filtroFechaDesde.value
-      ? new Date(filtroFechaDesde.value).getTime()
-      : 0,
-    hasta = filtroFechaHasta.value
-      ? new Date(filtroFechaHasta.value + "T23:59:59").getTime()
-      : Infinity;
-  let a = estado.envios.filter((e) => {
-    const t = new Date(e.fechaRegistro).getTime(),
-      texto = normalizarTexto(
-        [
-          e.codigoGuia,
-          e.sucursalOrigen,
-          e.sucursalDestino,
-          suc(e.sucursalOrigen)?.nombre,
-          suc(e.sucursalDestino)?.nombre,
-          mod(e.modalidad)?.nombre,
-          e.estado,
-        ].join(" "),
-      );
+
+/* ---------- Detalle e impresión ---------- */
+
+/** Abre la ficha completa del envío en un diálogo. */
+export function abrirDetalleEnvio(guia, origen) {
+  const e = envioPorGuia(guia);
+  if (!e) return avisar("Envío no encontrado.", true);
+  guiaDetalle = guia;
+  el.tituloDetalleEnvio.textContent = guia;
+  el.contenidoDetalleEnvio.innerHTML = htmlFichaEnvio(e, contexto(), { lineaTiempo: true });
+  if (!el.dialogoEnvio.open)
+    abrirDialogo(el.dialogoEnvio, { origen, enfocar: el.cerrarDetalleEnvio });
+}
+
+/** Imprime la ficha del envío abierto (A4, sin la interfaz). */
+function imprimirFicha() {
+  const e = envioPorGuia(guiaDetalle);
+  if (!e) return;
+  imprimir(
+    `<article class="ficha-impresa"><h2>Ficha del envío ${escapar(e.codigoGuia)}</h2>${htmlFichaEnvio(e, contexto(), { lineaTiempo: true })}</article>`,
+    `Ficha ${e.codigoGuia}`,
+  );
+}
+
+/** Cierra el detalle y abre el seguimiento de esa guía. */
+function irASeguimiento() {
+  const guia = guiaDetalle;
+  el.dialogoEnvio.close();
+  document.querySelector('[data-vista="seguimiento"]').click();
+  consultarGuia(guia);
+}
+
+/* ---------- Tabla: filtros, orden y paginación (RF-38 a RF-40) ---------- */
+
+/** Devuelve el predicado que combina texto, modalidad, estado, sucursal y fechas. */
+function crearFiltro() {
+  const q = normalizarTexto(el.buscarEnvio.value);
+  const desde = el.filtroFechaDesde.value
+    ? new Date(`${el.filtroFechaDesde.value}T00:00:00`).getTime()
+    : 0;
+  const hasta = el.filtroFechaHasta.value
+    ? new Date(`${el.filtroFechaHasta.value}T23:59:59`).getTime()
+    : Infinity;
+  return (e) => {
+    const fecha = new Date(e.fechaRegistro).getTime();
+    const texto = normalizarTexto(
+      [
+        e.codigoGuia,
+        e.envioOrigen,
+        e.sucursalOrigen,
+        e.sucursalDestino,
+        sucursal(e.sucursalOrigen)?.nombre,
+        sucursal(e.sucursalDestino)?.nombre,
+        modalidad(e.modalidad)?.nombre,
+        e.estado,
+        nombreCliente(e.clienteRemitente),
+        nombreCliente(e.clienteDestinatario),
+      ].join(" "),
+    );
     return (
       texto.includes(q) &&
-      (!filtroModalidadEnvio.value ||
-        e.modalidad === filtroModalidadEnvio.value) &&
-      (!filtroEstadoEnvio.value || e.estado === filtroEstadoEnvio.value) &&
-      (!filtroSucursalEnvio.value ||
-        e.sucursalOrigen === filtroSucursalEnvio.value ||
-        e.sucursalDestino === filtroSucursalEnvio.value) &&
-      t >= desde &&
-      t <= hasta
+      (!el.filtroModalidadEnvio.value || e.modalidad === el.filtroModalidadEnvio.value) &&
+      (!el.filtroEstadoEnvio.value || e.estado === el.filtroEstadoEnvio.value) &&
+      (!el.filtroSucursalEnvio.value ||
+        e.sucursalOrigen === el.filtroSucursalEnvio.value ||
+        e.sucursalDestino === el.filtroSucursalEnvio.value) &&
+      fecha >= desde &&
+      fecha <= hasta
     );
-  });
-  const valor = (e, c) =>
-    c === "guia"
-      ? e.codigoGuia
-      : c === "trayecto"
-        ? `${e.sucursalOrigen}-${e.sucursalDestino}`
-        : c === "modalidad"
-          ? mod(e.modalidad)?.nombre
-          : c === "total"
-            ? e.tarifa.total
-            : c === "estado"
-              ? e.estado
-              : new Date(e.fechaRegistro).getTime();
-  return a.slice().sort((x, y) => {
-    const A = valor(x, orden.campo),
-      B = valor(y, orden.campo),
-      r =
-        typeof A === "number"
-          ? A - B
-          : String(A).localeCompare(String(B), "es", { numeric: true });
-    return orden.direccion === "asc" ? r : -r;
+  };
+}
+
+const valorOrden = (e, campo) =>
+  ({
+    guia: e.codigoGuia,
+    trayecto: `${e.sucursalOrigen}-${e.sucursalDestino}`,
+    modalidad: modalidad(e.modalidad)?.nombre ?? "",
+    total: e.tarifa?.total ?? 0,
+    estado: e.estado,
+    fecha: new Date(e.fechaRegistro).getTime(),
+  })[campo];
+
+/** Orden de la tabla: numérico para totales y alfabético con números naturales para texto. */
+function comparador(x, y) {
+  const a = valorOrden(x, orden.campo);
+  const b = valorOrden(y, orden.campo);
+  const resultado =
+    typeof a === "number" ? a - b : String(a).localeCompare(String(b), "es", { numeric: true });
+  return orden.direccion === "asc" ? resultado : -resultado;
+}
+
+/** Devuelve los envíos filtrados y ordenados, o null si el rango de fechas es inválido. */
+function listaFiltrada() {
+  if (!rangoFechas.esValido()) return null;
+  return estado.envios.filter(crearFiltro()).sort(comparador);
+}
+
+/** Una fila de la tabla de envíos; Editar o Reenviar según el estado. */
+function htmlFila(e) {
+  const guia = escapar(e.codigoGuia);
+  const accionPrincipal =
+    e.estado === "devuelto"
+      ? `<button type="button" data-accion="reenviar" data-guia="${guia}" aria-label="Reenviar ${guia}">Reenviar</button>`
+      : `<button type="button" data-accion="editar" data-guia="${guia}" aria-label="Editar ${guia}" ${e.estado === "registrado" ? "" : "disabled"}>Editar</button>`;
+  return `<tr data-guia="${guia}" class="${e.estado === ESTADO_CANCELADO ? "fila-cancelada" : ""}"><td><strong>${guia}</strong></td><td>${escapar(e.sucursalOrigen)} → ${escapar(e.sucursalDestino)}</td><td>${escapar(modalidad(e.modalidad)?.nombre ?? e.modalidad)}</td><td>${moneda(e.tarifa?.total || 0)}</td><td>${htmlEstado(e.estado)}</td><td>${fechaLocal(e.fechaRegistro)}</td><td><div class="acciones"><button type="button" data-accion="detalle" data-guia="${guia}" aria-label="Ver detalle de ${guia}">Ver</button>${accionPrincipal}<button type="button" class="peligro" data-accion="cancelar" data-guia="${guia}" aria-label="Cancelar ${guia}" ${puedeCancelarse(e) ? "" : "disabled"}>Cancelar</button></div></td></tr>`;
+}
+
+/** Actualiza contadores y paginación sin tocar las filas (RF-40). */
+function actualizarMarcadores(lista = listaFiltrada()) {
+  const tamano = Number(el.cantidadEnviosPagina.value);
+  const total = lista ? lista.length : 0;
+  const paginas = Math.ceil(total / tamano);
+  pagina = Math.max(1, Math.min(pagina, paginas || 1));
+
+  el.contadorSolicitudes.textContent = !lista
+    ? "Rango de fechas inválido"
+    : total === estado.envios.length
+      ? `${total} solicitudes`
+      : `${total} de ${estado.envios.length} solicitudes`;
+  el.informacionPaginaEnvios.textContent = paginas
+    ? `Página ${pagina} de ${paginas}`
+    : "Página 0 de 0";
+  el.paginaAnteriorEnvios.disabled = pagina <= 1;
+  el.paginaSiguienteEnvios.disabled = !paginas || pagina >= paginas;
+
+  // Conteos separados (punto 26): activos + cancelados + históricos = total general
+  const conteo = estado.envios.reduce(
+    (acum, e) => ({ ...acum, [clasificarEnvio(e)]: acum[clasificarEnvio(e)] + 1 }),
+    { activo: 0, cancelado: 0, historico: 0 },
+  );
+  el.conteoActivos.textContent = conteo.activo;
+  el.conteoCancelados.textContent = conteo.cancelado;
+  el.conteoHistoricos.textContent = conteo.historico;
+  el.conteoTotal.textContent = estado.envios.length;
+  return { tamano, total };
+}
+
+/** Muestra la columna ordenada (▲/▼) y actualiza aria-sort. */
+function marcarOrden() {
+  document.querySelectorAll(".orden-columna").forEach((boton) => {
+    const activa = boton.dataset.orden === orden.campo;
+    boton.querySelector("span").textContent = activa ? (orden.direccion === "asc" ? "▲" : "▼") : "";
+    boton
+      .closest("th")
+      .setAttribute(
+        "aria-sort",
+        activa ? (orden.direccion === "asc" ? "ascending" : "descending") : "none",
+      );
   });
 }
+
+/** Tres situaciones distintas de tabla vacía, cada una con su propio mensaje. */
+function mensajeSinFilas(lista) {
+  if (!lista) return "Corrija el rango de fechas: Hasta no puede ser anterior a Desde.";
+  if (!estado.envios.length) return "Todavía no hay solicitudes registradas.";
+  return "No hay solicitudes que coincidan con los filtros.";
+}
+
+/** Redibujado total: se reserva para filtrar, ordenar y paginar (7.3). */
 export function renderEnvios() {
   if (!estado) return;
-  const a = lista(),
-    n = +cantidadEnviosPagina.value,
-    pags = Math.ceil(a.length / n);
-  pagina = Math.max(1, Math.min(pagina, pags || 1));
-  contadorSolicitudes.textContent =
-    a.length === estado.envios.length
-      ? `${a.length} solicitudes`
-      : `${a.length} de ${estado.envios.length} solicitudes`;
-  const p = a.slice((pagina - 1) * n, pagina * n);
-  tablaEnvios.innerHTML = p.length
-    ? p
-        .map(
-          (e) =>
-            `<tr><td><strong>${e.codigoGuia}</strong></td><td>${e.sucursalOrigen} → ${e.sucursalDestino}</td><td>${mod(e.modalidad)?.nombre || e.modalidad}</td><td>${moneda(e.tarifa?.total || 0)}</td><td><span class="estado">${nombreEstado(e.estado)}</span></td><td>${fechaLocal(e.fechaRegistro)}</td><td><div class="acciones"><button data-accion="detalle" data-guia="${e.codigoGuia}">Ver</button>${e.estado === "devuelto" ? `<button data-accion="reenviar" data-guia="${e.codigoGuia}">Reenviar</button>` : `<button data-accion="editar" data-guia="${e.codigoGuia}" ${e.estado !== "registrado" ? "disabled" : ""}>Editar</button>`}<button class="peligro" data-accion="eliminar" data-guia="${e.codigoGuia}" ${["en ruta", "entregado"].includes(e.estado) ? "disabled" : ""}>Eliminar</button></div></td></tr>`,
-        )
-        .join("")
-    : '<tr><td colspan="7" class="vacio">No hay resultados.</td></tr>';
-  informacionPaginaEnvios.textContent = pags
-    ? `Pagina ${pagina} de ${pags}`
-    : "Pagina 0 de 0";
-  paginaAnteriorEnvios.disabled = pagina <= 1;
-  paginaSiguienteEnvios.disabled = !pags || pagina >= pags;
-  document
-    .querySelectorAll(".orden-columna span")
-    .forEach((s) => (s.textContent = ""));
-  document.querySelector(
-    `.orden-columna[data-orden="${orden.campo}"] span`,
-  ).textContent = orden.direccion === "asc" ? "▲" : "▼";
+  const lista = listaFiltrada();
+  const { tamano } = actualizarMarcadores(lista);
+  const visibles = lista ? lista.slice((pagina - 1) * tamano, pagina * tamano) : [];
+  el.tablaEnvios.innerHTML = visibles.length
+    ? visibles.map(htmlFila).join("")
+    : `<tr><td colspan="7" class="vacio">${mensajeSinFilas(lista)}</td></tr>`;
+  marcarOrden();
 }
+
+/**
+ * Actualización dirigida (7.3): al registrar se inserta solo la fila nueva.
+ * Si el orden activo o los filtros impiden saber dónde va, se redibuja.
+ */
+export function insertarFila(guia) {
+  const e = envioPorGuia(guia);
+  const lista = listaFiltrada();
+  if (!e || !lista) return renderEnvios();
+  const coincide = lista.some((x) => x.codigoGuia === guia);
+  if (!coincide) return actualizarMarcadores(lista);
+  if (orden.campo !== "fecha" || orden.direccion !== "desc" || pagina !== 1) return renderEnvios();
+
+  const { tamano } = actualizarMarcadores(lista);
+  el.tablaEnvios.querySelector("td.vacio")?.closest("tr").remove();
+  el.tablaEnvios.insertAdjacentHTML("afterbegin", htmlFila(e));
+  while (el.tablaEnvios.rows.length > tamano) el.tablaEnvios.deleteRow(-1);
+}
+
+/** Reemplaza únicamente la fila de un envío cuyo estado u otros datos cambiaron. */
+function actualizarFila(guia) {
+  if (!estado) return;
+  const e = envioPorGuia(guia);
+  const fila = el.tablaEnvios.querySelector(`tr[data-guia="${CSS.escape(guia)}"]`);
+  const lista = listaFiltrada();
+  const coincide = Boolean(e && lista?.some((x) => x.codigoGuia === guia));
+  if (fila && coincide && orden.campo !== "estado") {
+    fila.outerHTML = htmlFila(e);
+    return actualizarMarcadores(lista);
+  }
+  // La fila aparece, desaparece o cambia de lugar: hay que redibujar
+  if (fila || coincide) return renderEnvios();
+  actualizarMarcadores(lista);
+}
+
+/** Restablece todos los filtros y los límites del rango de fechas. */
 function limpiarFiltros() {
   [
-    buscarEnvio,
-    filtroModalidadEnvio,
-    filtroEstadoEnvio,
-    filtroSucursalEnvio,
-    filtroFechaDesde,
-    filtroFechaHasta,
-  ].forEach((x) => (x.value = ""));
+    el.buscarEnvio,
+    el.filtroModalidadEnvio,
+    el.filtroEstadoEnvio,
+    el.filtroSucursalEnvio,
+    el.filtroFechaDesde,
+    el.filtroFechaHasta,
+  ].forEach((control) => (control.value = ""));
+  rangoFechas.sincronizar();
+  rangoFechas.esValido();
   pagina = 1;
   renderEnvios();
-}
-function detalle(e) {
-  guiaDetalle = e.codigoGuia;
-  const cli = (id) =>
-      estado.clientes.find((c) => c.id === id)?.nombre || "No disponible",
-    rec = Object.values(e.tarifa?.recargos || {}).reduce((a, b) => a + b, 0);
-  tituloDetalleEnvio.textContent = e.codigoGuia;
-  contenidoDetalleEnvio.innerHTML = `<div class="detalle-envio-grid"><section class="detalle-envio-seccion"><h3>Personas</h3><p>Remitente: ${cli(e.clienteRemitente)}</p><p>Destinatario: ${cli(e.clienteDestinatario)}</p></section><section class="detalle-envio-seccion"><h3>Trayecto</h3><p>${suc(e.sucursalOrigen)?.nombre} → ${suc(e.sucursalDestino)?.nombre}</p><p>${e.distanciaKm} km</p></section><section class="detalle-envio-seccion"><h3>Paquete</h3><p>${e.contenido}</p><p>Peso real: ${e.pesoReal} kg</p><p>Peso volumetrico: ${e.pesoVolumetrico} kg</p><p>Peso facturable: ${e.pesoFacturable} kg</p><p>Largo × Ancho × Alto: ${e.dimensiones.largo} × ${e.dimensiones.ancho} × ${e.dimensiones.alto} cm</p>${e.envioOrigen?`<p>Guia original: <strong>${escapar(e.envioOrigen)}</strong></p>`:""}${estado.envios.find(x=>x.envioOrigen===e.codigoGuia)?`<p>Reenvio asociado: <strong>${escapar(estado.envios.find(x=>x.envioOrigen===e.codigoGuia).codigoGuia)}</strong></p>`:""}</section><section class="detalle-envio-seccion"><h3>Operacion</h3><p>${mod(e.modalidad)?.nombre}</p><p>${nombreEstado(e.estado)}</p><p>${e.emisionesKgCO2e} kg CO2e</p></section><section class="detalle-envio-seccion detalle-tarifa"><h3>Tarifa</h3><p>Base ${moneda(e.tarifa.base)} · Peso facturable ${moneda(e.tarifa.peso)} · Distancia ${moneda(e.tarifa.distancia)} · Recargos ${moneda(rec)} · Descuento ${moneda(e.tarifa.descuento)}</p><p><strong>Total ${moneda(e.tarifa.total)}</strong></p></section></div>`;
-  dialogoEnvio.showModal();
-  cerrarDetalleEnvio.focus();
 }

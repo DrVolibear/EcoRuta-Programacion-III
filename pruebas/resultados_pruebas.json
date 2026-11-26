@@ -1,0 +1,707 @@
+[
+  {
+    "nombre": "P01 cambiar «remitente» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «destinatario» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «origen» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «destino» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «peso» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «largo» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «ancho» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «alto» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «contenido» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «urgente» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «autorizacionSobredimension» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 cambiar «responsableAutorizacion» invalida la comparación",
+    "ok": true,
+    "detalle": "opciones 3→0"
+  },
+  {
+    "nombre": "P01 escribir en la búsqueda de remitente conserva la comparación si la selección sigue siendo la misma",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P01 al registrar se vuelve a validar el formulario (peso 9999 rechazado)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P01 al registrar se compara la firma de datos (contenido cambiado sin evento)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 largo 210 cm sin marcar autorización no compara",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 al marcar se habilita el campo responsable y es obligatorio",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 responsable vacío: mensaje exacto y sin opciones",
+    "ok": true,
+    "detalle": "Indique el responsable que autorizó la sobredimensión."
+  },
+  {
+    "nombre": "P02 responsable solo con espacios: se rechaza",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 responsable válido: aparecen modalidades",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 al registrar con responsable vacío no se guarda",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 responsable guardado recortado en el envío",
+    "ok": true,
+    "detalle": "{\"autorizada\":true,\"responsable\":\"Marta Rojas\"}"
+  },
+  {
+    "nombre": "P02 auditoría: el historial nombra al responsable",
+    "ok": true,
+    "detalle": "Solicitud registrada; sobredimensión autorizada por Marta Rojas"
+  },
+  {
+    "nombre": "P02 el detalle muestra el responsable",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 el seguimiento muestra el responsable",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P02 al desmarcar se limpia y deshabilita el responsable",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P03 (escritorio 1280px) tres grupos iguales en una fila",
+    "ok": true,
+    "detalle": "[102,102,102]"
+  },
+  {
+    "nombre": "P03 etiquetas «Largo (cm) *», «Ancho (cm) *», «Alto (cm) *» en ese orden",
+    "ok": true,
+    "detalle": "Largo (cm) *|Ancho (cm) *|Alto (cm) *"
+  },
+  {
+    "nombre": "P03 la unidad «cm» está dentro de la caja de cada campo",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P03 sin desbordamiento horizontal (escritorio)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P03 (tableta 768px) tres grupos iguales en una fila",
+    "ok": true,
+    "detalle": "[206,206,206]"
+  },
+  {
+    "nombre": "P03 (teléfono 390px) una sola columna",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P03 sin desbordamiento horizontal (teléfono)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P04 el filtro de estado solo ofrece Todos / En bodega / Asignado a ruta / En ruta / Retenido",
+    "ok": true,
+    "detalle": "Todos|En bodega|Asignado a ruta|En ruta|Retenido"
+  },
+  {
+    "nombre": "P04 Todos",
+    "ok": true,
+    "detalle": "23 / 23"
+  },
+  {
+    "nombre": "P04 filtro «en bodega»",
+    "ok": true,
+    "detalle": "13 / 13"
+  },
+  {
+    "nombre": "P04 filtro «asignado a ruta»",
+    "ok": true,
+    "detalle": "5 / 5"
+  },
+  {
+    "nombre": "P04 filtro «en ruta»",
+    "ok": true,
+    "detalle": "5 / 5"
+  },
+  {
+    "nombre": "P04 filtro «retenido»",
+    "ok": true,
+    "detalle": "4 / 4"
+  },
+  {
+    "nombre": "P04 el contador refleja el filtro",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P04 todas las filas retenidas llevan la clase, fondo naranja suave y rótulo «Retenido»",
+    "ok": true,
+    "detalle": "rgb(253, 234, 223)"
+  },
+  {
+    "nombre": "P04 columna «Peso facturable» y «Tiempo en bodega»",
+    "ok": true,
+    "detalle": "Guía|Sucursal|Destino|Contenido|Peso facturable|Tiempo en bodega|Situación"
+  },
+  {
+    "nombre": "P04 «1 día» y «2 días» aparecen y nunca «día(s)»",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P04 «Cancelado» está en el filtro histórico y no en el inventario",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P05 al abrir el formulario de clientes no hay campos en rojo ni mensajes",
+    "ok": true,
+    "detalle": "rgb(111, 133, 124)"
+  },
+  {
+    "nombre": "P05 el teléfono 61681217 se formatea como 6168-1217",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P05 cliente válido guardado",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P05 correo duplicado (mayúsculas y espacios) se rechaza",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P05 mensaje «El correo ya está registrado.» visible bajo el campo",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P06 campos obligatorios solo con espacios no se guardan",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P06 mensajes específicos por campo",
+    "ok": true,
+    "detalle": "{\"identificacion\":\"La identificación es obligatoria.\",\"nombre\":\"El nombre es obligatorio.\",\"direccion\":\"La dirección es obligatoria.\",\"correo\":\"El correo es obligatorio.\"}"
+  },
+  {
+    "nombre": "P06 se recortan identificación, nombre, correo y dirección al crear",
+    "ok": true,
+    "detalle": "[\"9-0003-0003\",\"Nombre Con Espacios\",\"recorte@correo.cr\",\"Calle 5\"]"
+  },
+  {
+    "nombre": "P07 editar con «correo» inválido no guarda",
+    "ok": true,
+    "detalle": "correo=ana.solano@demo.cr"
+  },
+  {
+    "nombre": "P07 editar con «telefono» inválido no guarda",
+    "ok": true,
+    "detalle": "telefono=8000-1000"
+  },
+  {
+    "nombre": "P07 editar con «nombre» inválido no guarda",
+    "ok": true,
+    "detalle": "nombre=Ana Solano"
+  },
+  {
+    "nombre": "P07 editar con «codigoPostal» inválido no guarda",
+    "ok": true,
+    "detalle": "codigoPostal=10101"
+  },
+  {
+    "nombre": "P07 editar con «identificacion» inválido no guarda",
+    "ok": true,
+    "detalle": "identificacion=1-1000-2000"
+  },
+  {
+    "nombre": "P07 edición válida se guarda recortada",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P07 mensaje de búsqueda sin resultados",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P07 mensaje de lista vacía distinto: «No hay clientes registrados.»",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 los conteos son consistentes: activos + cancelados + históricos = total",
+    "ok": true,
+    "detalle": "{\"a\":\"33\",\"c\":\"2\",\"h\":\"8\",\"t\":\"43\"}"
+  },
+  {
+    "nombre": "P08 se abre el modal de cancelación segura",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 el modal muestra guía, clientes, estado y trayecto",
+    "ok": true,
+    "detalle": "Guía | ENV-2026-00033 | Cliente | Sofía Castro → Mateo Salas | Estado actual | Registrado | Trayecto | Heredia Centro → Alajuela Centro | Relaciones | Sin ruta"
+  },
+  {
+    "nombre": "P08 el modal muestra impacto",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 contador inicial 0/10 y botón de confirmar deshabilitado",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 el scroll del fondo queda bloqueado",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 con 9 caracteres sigue deshabilitado (9/10)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 los espacios no cuentan como motivo",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 Escape cierra sin cancelar",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 el foco vuelve al botón que abrió el modal",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 se libera el bloqueo de scroll al cerrar",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 clic en el fondo cierra el modal",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 el botón «Cancelar» cierra sin exigir motivo",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 clic dentro del modal no lo cierra",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 cancelación lógica: estado «cancelado» con motivo, fecha y estado anterior",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 la guía y el historial se conservan (no se elimina)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 conteos: activos −1, cancelados +1, total igual",
+    "ok": true,
+    "detalle": "{\"a\":\"32\",\"c\":\"3\",\"t\":\"43\"}"
+  },
+  {
+    "nombre": "P08 la fila cancelada se atenúa y sus botones se bloquean",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 tras recargar la página el envío sigue cancelado",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 un envío cancelado no aparece en pendientes de ingreso",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 el seguimiento muestra motivo de cancelación y no ofrece cambios de estado",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P08 un envío en ruta no se puede cancelar (RN-09)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P09 segundo reenvío activo bloqueado con el mensaje «Ya existe un reenvío activo: ENV-…»",
+    "ok": true,
+    "detalle": "Ya existe un reenvío activo: ENV-2026-00032"
+  },
+  {
+    "nombre": "P09 el primer reenvío se registra con envioOrigen",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P09 intentar de nuevo muestra el aviso con la guía del reenvío",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P09 con el reenvío cancelado se permite otro",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P09 la ficha del original enlaza al reenvío",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P09 el enlace abre la ficha del reenvío con el enlace de vuelta al original",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P10 Bicicleta de carga: capacidad máxima 40 kg tomada de datos.json",
+    "ok": true,
+    "detalle": "valor 40, max 40"
+  },
+  {
+    "nombre": "P10 Furgón eléctrico: capacidad máxima 800 kg tomada de datos.json",
+    "ok": true,
+    "detalle": "valor 800, max 800"
+  },
+  {
+    "nombre": "P10 Camión consolidado: capacidad máxima 5000 kg tomada de datos.json",
+    "ok": true,
+    "detalle": "valor 5000, max 5000"
+  },
+  {
+    "nombre": "P10 Carga aérea: capacidad máxima 1500 kg tomada de datos.json",
+    "ok": true,
+    "detalle": "valor 1500, max 1500"
+  },
+  {
+    "nombre": "P10 capacidad operativa mayor que el máximo (100 > 40 kg) se rechaza con mensaje",
+    "ok": true,
+    "detalle": "La capacidad operativa no puede superar 40 kg, el máximo de Bicicleta de carga."
+  },
+  {
+    "nombre": "P10 capacidad operativa menor o igual al máximo (30 ≤ 40 kg) crea la ruta",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P10 fecha de salida pasada se rechaza",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P10 «Cerrar y despachar» está deshabilitado en una ruta sin envíos",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P11 la búsqueda por guía ofrece resultado de tipo Guía",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P11 elegir una guía navega al Seguimiento y muestra su ficha",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P11 elegir un cliente navega a Clientes y lo muestra filtrado",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P11 elegir una ruta navega a Despacho y resalta la ruta",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P11 sin coincidencias se informa",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P11 Escape cierra la lista de resultados",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P11 Enter abre el primer resultado",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 Hasta.min = Desde",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 Desde.max = Hasta",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 Hasta.max es hoy",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 rango inválido muestra «Hasta no puede ser anterior a Desde.»",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 con rango inválido la tabla no muestra datos engañosos",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 al corregir el rango desaparece el error y vuelve la tabla",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 «Limpiar filtros» restablece las fechas y los límites",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P12 el panel también limita Hasta.min",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P13 la ficha se imprime en A4",
+    "ok": true,
+    "detalle": "Page size:       594.96 x 841.92 pts (A4)"
+  },
+  {
+    "nombre": "P13 ninguna página queda en blanco",
+    "ok": true,
+    "detalle": "2 página(s)"
+  },
+  {
+    "nombre": "P13 la primera hoja lleva fecha de impresión y la guía",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P13 la impresión contiene el desglose de tarifa y los tres pesos",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P13 no se imprime la interfaz (menú, buscador ni modal)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "P13 la guía de despacho se imprime con fecha, envíos y firmas",
+    "ok": true,
+    "detalle": "1 página(s)"
+  },
+  {
+    "nombre": "P14 node --check pasa en los 16 archivos JS",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 seguimiento: el código se normaliza a mayúsculas y sin espacios",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 la ficha trae los tres pesos, dimensiones en cm y desglose",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 la ficha explica el peso facturable",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 al editar el código se limpia la ficha anterior",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 «env202699999» se formatea como ENV-2026-99999",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 guía inexistente: mensaje claro y sin ficha",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 formato inválido: mensaje de formato en español junto al campo",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E01 guía vacía: «Indique el código de guía.»",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E02 la comparación muestra resumen de la solicitud, menor emisión y desglose por componente",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E02 7.3: registrar inserta solo la fila nueva (las filas existentes no se redibujan)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E02 RF-23: se guarda la modalidad de menor emisión y si el agente la eligió",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E02 7.3: cancelar un envío solo reemplaza su fila",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E03 con el sistema en modo oscuro el tema automático se oscurece",
+    "ok": true,
+    "detalle": "rgb(14, 25, 22)"
+  },
+  {
+    "nombre": "E03 el tema «Claro» manual vence al modo oscuro del sistema",
+    "ok": true,
+    "detalle": "rgb(242, 246, 244)"
+  },
+  {
+    "nombre": "E03 el tema elegido persiste",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E04 configuración fuera de rango se rechaza y conserva el valor",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E04 configuración válida se guarda",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E05 sin scripts ni estilos externos (CDN)",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E05 la aplicación pesa menos de 500 KB",
+    "ok": true,
+    "detalle": "234 KB"
+  },
+  {
+    "nombre": "E05 la clave de localStorage no cambió",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E06 390px: ninguna vista desborda horizontalmente",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E06 820px: ninguna vista desborda horizontalmente",
+    "ok": true,
+    "detalle": ""
+  },
+  {
+    "nombre": "E06 1280px: ninguna vista desborda horizontalmente",
+    "ok": true,
+    "detalle": ""
+  }
+]

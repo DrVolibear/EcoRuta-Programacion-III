@@ -1,0 +1,1172 @@
+[
+ {
+  "nombre": "[rf01] la solicitud se guarda con remitente, destinatario, paquete y sucursales",
+  "ok": true,
+  "detalle": "[\"CLI-DEMO-1\",\"CLI-DEMO-2\"]"
+ },
+ {
+  "nombre": "[rf01] el estado inicial es «registrado»",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf02] formato ENV-AAAA-NNNNN",
+  "ok": true,
+  "detalle": "ENV-2026-00044"
+ },
+ {
+  "nombre": "[rf02] correlativa: continúa tras la última guía existente",
+  "ok": true,
+  "detalle": "ENV-2026-00044"
+ },
+ {
+  "nombre": "[rf02] una guía cancelada no se reutiliza (la siguiente es mayor)",
+  "ok": true,
+  "detalle": "ENV-2026-00044 → ENV-2026-00045"
+ },
+ {
+  "nombre": "[rf02] todas las guías son únicas",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf03] campos obligatorios con required (16)",
+  "ok": true,
+  "detalle": 16
+ },
+ {
+  "nombre": "[rf03] type number/email/tel y min/max en peso y dimensiones",
+  "ok": true,
+  "detalle": "{\"pesoMin\":\"0.1\",\"pesoMax\":\"500\",\"largoMin\":\"1\",\"largoMax\":\"300\"}"
+ },
+ {
+  "nombre": "[rf03] maxlength en los campos de texto del cliente",
+  "ok": true,
+  "detalle": "identificacion,nombre,telefono,correo,direccion,codigoPostal"
+ },
+ {
+  "nombre": "[rf03] pattern en teléfono, identificación y código postal, y todos compilan (flag v)",
+  "ok": true,
+  "detalle": "[[\"identificacion\",\"[0-9\\\\-]{7,20}\"],[\"telefono\",\"[0-9]{4}-[0-9]{4}\"],[\"codigoPostal\",\"[0-9]{5}\"]]"
+ },
+ {
+  "nombre": "[rf03] el patrón de identificación ya no produce errores de consola",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf04] peso volumétrico = L×A×H / divisor del catálogo",
+  "ok": true,
+  "detalle": "[3,200]"
+ },
+ {
+  "nombre": "[rf04] facturable = mayor entre real (1) y volumétrico (200)",
+  "ok": true,
+  "detalle": "[1,200,200]"
+ },
+ {
+  "nombre": "[rf04] facturable = real cuando supera al volumétrico",
+  "ok": true,
+  "detalle": "[10,0.2,10]"
+ },
+ {
+  "nombre": "[rf05] cadena de frío solo ofrece modalidades refrigeradas",
+  "ok": true,
+  "detalle": "electrico,consolidado"
+ },
+ {
+  "nombre": "[rf05] frágil y frío tienen recargo propio; general no tiene",
+  "ok": true,
+  "detalle": "[366.12,549.18]"
+ },
+ {
+  "nombre": "[rf06] la comparación abre con el resumen de la solicitud (remitente, trayecto y paquete)",
+  "ok": true,
+  "detalle": "Resumen de la solicitud\nRemitente\nAna Solano\nDestinatario\nLuis Vargas\nTrayecto\nSan José Centro → Alajuela Centro (20 km)\nContenido\nFrágil\nLargo × Ancho × Alto\n30 × 25 × 20 cm\nPeso real\n5 kg\nPeso volum"
+ },
+ {
+  "nombre": "[rf06] cada opción muestra desglose de tarifa y emisiones antes de confirmar",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf06] no se registra nada hasta elegir una opción",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf07] cada error trae campo y mensaje específico (se muestran todos a la vez)",
+  "ok": true,
+  "detalle": "remitente,destinatario,destino,peso,largo,alto,autorizacionSobredimension"
+ },
+ {
+  "nombre": "[rf07] formulario vacío: campos marcados con aria-invalid y mensaje junto a cada uno",
+  "ok": true,
+  "detalle": "8/8"
+ },
+ {
+  "nombre": "[rf07] no se abrió ninguna comparación con datos inválidos",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf08] al editar se conserva la guía y se actualizan los datos",
+  "ok": true,
+  "detalle": "ENV-2026-00032 peso 7"
+ },
+ {
+  "nombre": "[rf08] solo se editan solicitudes en estado «registrado» (en bodega: botón Editar deshabilitado)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf09] el cliente se guarda con identificación, nombre, teléfono, correo, dirección y provincia",
+  "ok": true,
+  "detalle": "{\"id\":\"d749de95-cf07-4071-80f5-41595a587e1c\",\"identificacion\":\"1-2345-6789\",\"nombre\":\"Cliente de Prueba\",\"telefono\":\"8888-1234\",\"correo\":\"prueba@correo.com\",\"direccion\":\"Avenida 1, San José\",\"codigoPostal\":\"10101\",\"provincia\":\"San José\",\"activo\":true,\"estado\":\"activo\",\"fechaRegistro\":\"2026-11-26T01:46:22.903Z\"}"
+ },
+ {
+  "nombre": "[rf09] la identificación es única (duplicado rechazado)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf10] la búsqueda reduce las opciones del selector",
+  "ok": true,
+  "detalle": 2
+ },
+ {
+  "nombre": "[rf10] al elegirlo se muestran sus datos (autocompletado visible)",
+  "ok": true,
+  "detalle": "8111-1039 · carlos.mora@demo.cr · Cartago"
+ },
+ {
+  "nombre": "[rf11] la tabla se filtra mientras se escribe, sin recargar la página",
+  "ok": true,
+  "detalle": "15→1"
+ },
+ {
+  "nombre": "[rf12] el nombre editado aparece en la ficha de sus envíos (los envíos guardan el id del cliente)",
+  "ok": true,
+  "detalle": "Ana Solano"
+ },
+ {
+  "nombre": "[rf13] un cliente con envíos activos no se elimina y se ofrece inactivarlo",
+  "ok": true,
+  "detalle": "No se puede cancelar: tiene 6 envíos activos (ENV-2026-00009, ENV-2026-00014, ENV-2026-00022, ENV-2026-00027, ENV-2026-00035, ENV-2026-00040). Marque al cliente como inactivo."
+ },
+ {
+  "nombre": "[rf13] puede inactivarse (baja lógica) conservando sus datos",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf14] título «Historial de envíos de [cliente]»",
+  "ok": true,
+  "detalle": "Historial de envíos de Ana Solano"
+ },
+ {
+  "nombre": "[rf14] lista sus envíos y muestra el total facturado (sin cancelados)",
+  "ok": true,
+  "detalle": "49370 | 7 envíos · Total facturado (sin cancelados): ₡49 370\n\nEnvíos de Ana Solano\nGuía\tRol\tFecha\tTotal\tEstado\nENV-2026-00027\tRe"
+ },
+ {
+  "nombre": "[rf15] datos.json trae sucursales, distancias, modalidades, tarifas, recargos y reglas",
+  "ok": true,
+  "detalle": "version,sucursales,distancias,modalidades,tarifas,recargos,reglas,referencias"
+ },
+ {
+  "nombre": "[rf15] cada sucursal trae código, nombre, provincia, capacidad, modalidades y tarifa base",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf15] la matriz de distancias es completa y simétrica",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf16] mientras se descarga el catálogo la aplicación está oculta y se muestra el estado de carga",
+  "ok": true,
+  "detalle": "{\"app\":true,\"carga\":true}"
+ },
+ {
+  "nombre": "[rf16] al terminar se habilitan los formularios con las sucursales del catálogo",
+  "ok": true,
+  "detalle": "{\"habilitado\":true,\"carga\":true,\"opciones\":8}"
+ },
+ {
+  "nombre": "[rf17] sin red y sin copia local: mensaje de error y botón «Reintentar» (no pantalla en blanco)",
+  "ok": true,
+  "detalle": "No fue posible cargar el catálogo: Failed to fetch"
+ },
+ {
+  "nombre": "[rf17] al volver la red, «Reintentar» recupera la aplicación",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf18] un catálogo inválido informa qué campo falla (tarifas.porKg)",
+  "ok": true,
+  "detalle": "No fue posible cargar el catálogo: Catálogo inválido: tarifas.porKg debe ser un número no negativo"
+ },
+ {
+  "nombre": "[rf19] la vista del catálogo muestra las 7 sucursales con capacidad y tarifa base",
+  "ok": true,
+  "detalle": "M3\n\nCatálogo institucional\nSan José Centro\n\nSJO-01 · Capacidad 5 000 kg · Tarifa base ₡1 800\n\nModali"
+ },
+ {
+  "nombre": "[rf19] lista las modalidades con sus factores",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf20] la distancia sale de la matriz del catálogo (SJO→LIM = 160 km) y es simétrica",
+  "ok": true,
+  "detalle": "[160,160,\"No existe una distancia válida entre SJO-01 y XXX\"]"
+ },
+ {
+  "nombre": "[rf20] un par sin distancia produce un error explícito",
+  "ok": true,
+  "detalle": "No existe una distancia válida entre SJO-01 y XXX"
+ },
+ {
+  "nombre": "[rf20] ningún módulo incrusta distancias (solo catalogo.js las lee)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf21] viables según peso facturable (30 kg descarta la bicicleta; 900 kg deja solo el consolidado)",
+  "ok": true,
+  "detalle": "[[\"electrico\",\"consolidado\"],[\"consolidado\"]]"
+ },
+ {
+  "nombre": "[rf21] viables según distancia (160 km descarta la bicicleta y habilita el aéreo)",
+  "ok": true,
+  "detalle": "[\"electrico\",\"consolidado\",\"aereo\"]"
+ },
+ {
+  "nombre": "[rf21] viables según la sucursal de origen (Limón no ofrece bicicleta)",
+  "ok": true,
+  "detalle": "[\"electrico\",\"consolidado\"]"
+ },
+ {
+  "nombre": "[rf22] se comparan las modalidades viables (≥2) con tarifa, emisiones y tiempo de entrega",
+  "ok": true,
+  "detalle": "3 opciones"
+ },
+ {
+  "nombre": "[rf23] la opción de menor emisión aparece destacada",
+  "ok": true,
+  "detalle": 1
+ },
+ {
+  "nombre": "[rf24] la ruta guarda destino, modalidad, fecha de salida y envíos asignados (vacía al crearse)",
+  "ok": true,
+  "detalle": "{\"codigo\":\"RUTA-2026-0006\",\"sucursalDestino\":\"HER-01\",\"modalidad\":\"consolidado\",\"fechaSalida\":\"2026-11-27T19:46\",\"capacidadPeso\":500,\"capacidadCantidad\":10,\"envios\":[],\"estado\":\"abierta\",\"emisionesTotales\":0,\"ahorroConsolidacion\":0,\"fechaCreacion\":\"2026-11-26T01:46:31.969Z\"}"
+ },
+ {
+  "nombre": "[rf24] aparece en la lista de rutas",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf25] la ruta respeta su capacidad en paquetes (el segundo envío se rechaza)",
+  "ok": true,
+  "detalle": "2 disponibles, 1 asignados"
+ },
+ {
+  "nombre": "[rf25] la ruta informa su capacidad libre",
+  "ok": true,
+  "detalle": "RUTA-2026-0005\n\nPuntarenas Centro · Camión consolidado · Abierta\n\nCerrar y despachar\nImprimir guía\nCancelar ruta\n\nPeso facturable 18.0/1000 kg · Paquetes 1/1 · "
+ },
+ {
+  "nombre": "[rf27] retirar un envío de una ruta que no salió lo devuelve a «en bodega»",
+  "ok": true,
+  "detalle": "[\"en bodega\",null]"
+ },
+ {
+  "nombre": "[rf27] el retiro queda en el historial del envío",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf27] una ruta que ya salió no ofrece botón de retirar",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf28] cerrar la ruta cambia en bloque el estado de todos sus envíos a «en ruta»",
+  "ok": true,
+  "detalle": "en ruta,en ruta,en ruta"
+ },
+ {
+  "nombre": "[rf28] la ruta registra su fecha real de salida y los ahorros por consolidación",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf29] subtotal = (base de sucursal + peso×tarifa/kg + km×tarifa/km) × factor de modalidad",
+  "ok": true,
+  "detalle": "3051 vs 3051"
+ },
+ {
+  "nombre": "[rf29] total sin recargos ni descuento (modalidad aérea, sin descuento) = subtotal",
+  "ok": true,
+  "detalle": "7458 vs 7458"
+ },
+ {
+  "nombre": "[rf30] urgente 25 %, frágil 12 %, frío 18 % y sobredimensión 20 % del subtotal (porcentajes de datos.json)",
+  "ok": true,
+  "detalle": "{\"sub\":3051,\"u\":762.75,\"f\":366.12,\"c\":549.18,\"s\":610.2}"
+ },
+ {
+  "nombre": "[rf31] el catálogo marca la modalidad consolidada y el código la reconoce aunque falte la marca",
+  "ok": true,
+  "detalle": "[true,false,305.1]"
+ },
+ {
+  "nombre": "[rf31] envío consolidado sin urgencia: descuento ecológico = % de datos.json sobre el subtotal",
+  "ok": true,
+  "detalle": "[3051,305.1]"
+ },
+ {
+  "nombre": "[rf31] el total del consolidado ya descuenta: round(subtotal − descuento)",
+  "ok": true,
+  "detalle": "2746"
+ },
+ {
+  "nombre": "[rf31] la baja emisión conserva su descuento y el aéreo (ni limpio ni consolidado) no recibe",
+  "ok": true,
+  "detalle": "[339,0]"
+ },
+ {
+  "nombre": "[rf31] la marca del catálogo gobierna la política (no depende del código de la modalidad)",
+  "ok": true,
+  "detalle": "745.8000000000002"
+ },
+ {
+  "nombre": "[rf31] consolidado con urgencia: recargo sí, descuento no (RN-11)",
+  "ok": true,
+  "detalle": "[0,762.75]"
+ },
+ {
+  "nombre": "[rf31] el desglose explica el motivo (consolidada, baja emisión, ninguno, urgencia)",
+  "ok": true,
+  "detalle": "[\"10 % del subtotal (modalidad consolidada: varios envíos comparten un viaje)\",\"10 % del subtotal (modalidad de baja emisión)\",\"No aplica: la modalidad no es de baja emisión ni consolidada\",\"No aplica: no se acumula con el recargo por urgencia (RN-11)\"]"
+ },
+ {
+  "nombre": "[rf31] la comparación muestra el descuento ecológico en la opción consolidada",
+  "ok": true,
+  "detalle": " Camión consolidado Total₡6 593Emisiones0.18 kg CO₂eEntrega estimada1 h Desglose de la tarifaDesglose de la tarifaComponenteRegla aplicadaMontoBaseTarifa base de la sucursal de origen₡1 800Peso factur"
+ },
+ {
+  "nombre": "[rf31] el total mostrado coincide con la tarifa calculada con descuento",
+  "ok": true,
+  "detalle": "6593 vs 6593"
+ },
+ {
+  "nombre": "[rf31] el catálogo declara la política: baja emisión y consolidada, sin urgencia",
+  "ok": true,
+  "detalle": "Por kg facturable\n₡190\nPor km\n₡32\nDescuento ecológico\n10% (modalidades de baja emisión y consolidada, sin urgencia)\nRecargos\nUrgente 25% · Frágil 12% · Cadena d"
+ },
+ {
+  "nombre": "[rf26] datos.json declara la «furgoneta individual» con datos que ya estaban en el catálogo (factor del camión de combustión, capacidad de la furgoneta)",
+  "ok": true,
+  "detalle": "{\"nombre\":\"Furgoneta individual de combustión\",\"factorEmision\":0.09,\"capacidadKg\":800,\"supuesto\":\"Línea base de RF-26: un viaje de furgoneta convencional por envío. Usa el factor de emisión del vehículo de combustión terrestre del catálogo (consolidado) y la capacidad de la furgoneta del catálogo (eléctrico); no introduce datos ajenos.\"}"
+ },
+ {
+  "nombre": "[rf26] línea base: un viaje de furgoneta por envío (4 × 100 km) frente a un solo viaje consolidado",
+  "ok": true,
+  "detalle": "[3.6,3.6,0.9,0.9]"
+ },
+ {
+  "nombre": "[rf26] ahorro = individuales − consolidadas, con su porcentaje",
+  "ok": true,
+  "detalle": "[2.7,75]"
+ },
+ {
+  "nombre": "[rf26] informa viajes y km evitados (4 viajes → 1; 400 km → 100 km)",
+  "ok": true,
+  "detalle": "[3,300]"
+ },
+ {
+  "nombre": "[rf26] con carga pesada la furgoneta individual emite más por paquete y el ahorro crece (≈84 %)",
+  "ok": true,
+  "detalle": "[8.505,1.08,84]"
+ },
+ {
+  "nombre": "[rf26] un solo envío no tiene viajes por evitar",
+  "ok": true,
+  "detalle": "[0,0]"
+ },
+ {
+  "nombre": "[rf26] un solo envío no se presenta como consolidación: ahorro 0 % y emisiones individuales = consolidadas",
+  "ok": true,
+  "detalle": "{\"peso\":10,\"cantidad\":1,\"emisionesIndividuales\":0.9,\"emisionesConsolidadas\":0.9,\"ahorro\":0,\"ahorroPorcentaje\":0,\"viajesIndividuales\":1,\"viajesConsolidados\":1,\"viajesEvitados\":0,\"kmEvitados\":0}"
+ },
+ {
+  "nombre": "[rf26] una ruta vacía devuelve ceros, sin NaN",
+  "ok": true,
+  "detalle": "{\"peso\":0,\"cantidad\":0,\"emisionesIndividuales\":0,\"emisionesConsolidadas\":0,\"ahorro\":0,\"ahorroPorcentaje\":0,\"viajesIndividuales\":0,\"viajesConsolidados\":0,\"viajesEvitados\":0,\"kmEvitados\":0}"
+ },
+ {
+  "nombre": "[rf26] el ahorro nunca es negativo (aunque la modalidad de la ruta emita más que la furgoneta)",
+  "ok": true,
+  "detalle": "0"
+ },
+ {
+  "nombre": "[rf26] si el catálogo no trae la referencia se usa el vehículo de la ruta (un viaje por envío)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf26] un catálogo con la referencia mal definida informa el campo (referencias.furgonetaIndividual.factorEmision)",
+  "ok": true,
+  "detalle": "Catálogo inválido: referencias.furgonetaIndividual.factorEmision debe ser un número mayor que cero"
+ },
+ {
+  "nombre": "[rf26] la tarjeta de ruta muestra furgonetas individuales, consolidado, ahorro, % y viajes evitados",
+  "ok": true,
+  "detalle": "RUTA-2026-0003 Heredia Centro · Camión consolidado · Abierta Cerrar y despachar Imprimir guía Cancelar ruta Peso facturable 47.5/1000 kg · Paquetes 3/10 · Libre 952.5 kg y 7 paquetes En furgonetas individuales 2.745 kg CO₂e · 3 viajes Consolidado 1.485 kg CO₂e"
+ },
+ {
+  "nombre": "[rf26] el aviso de despacho compara furgonetas individuales con el viaje consolidado",
+  "ok": true,
+  "detalle": "Confirmar despacho RUTA-2026-0003 hacia Heredia Centro en Camión consolidado. 3 paquetes, 47.5 kg, salida 26/11/2026, 7:45:00 p. m., emisiones consolidadas 1.485 kg CO₂e frente a 2.745 kg CO₂e en furg"
+ },
+ {
+  "nombre": "[rf26] al despachar se guarda el resultado de la consolidación (ahorro, %, viajes y km evitados)",
+  "ok": true,
+  "detalle": "{\"emisionesIndividuales\":2.745,\"emisionesConsolidadas\":1.485,\"ahorro\":1.26,\"ahorroPorcentaje\":45.9,\"viajesIndividuales\":3,\"viajesConsolidados\":1,\"viajesEvitados\":2,\"kmEvitados\":140}"
+ },
+ {
+  "nombre": "[rf26] el ahorro se reparte entre los envíos de la ruta (RF-48)",
+  "ok": true,
+  "detalle": "0.42,0.42,0.42"
+ },
+ {
+  "nombre": "[rf26] una ruta ya despachada conserva y muestra el resultado guardado",
+  "ok": true,
+  "detalle": "RUTA-2026-0003 Heredia Centro · Camión consolidado · En ruta Imprimir guía Peso facturable 47.5/1000 kg · Paquetes 3/10 · Libre 952.5 kg y 7 paquetes En furgonetas individuales 2.745 kg CO₂e · 3 viaje"
+ },
+ {
+  "nombre": "[rf26] las rutas despachadas de la demostración traen su resultado de consolidación",
+  "ok": true,
+  "detalle": "{\"emisionesIndividuales\":2.925,\"emisionesConsolidadas\":1.44,\"ahorro\":1.485,\"ahorroPorcentaje\":50.8,\"viajesIndividuales\":6,\"viajesConsolidados\":1,\"viajesEvitados\":5,\"kmEvitados\":165}"
+ },
+ {
+  "nombre": "[rf26] compatibilidad: con el catálogo y el estado de la v2.2.1 las rutas se muestran sin errores (línea base = vehículo de la ruta)",
+  "ok": true,
+  "detalle": "RUTA-2026-0001 San José Centro · Camión consolidado · En ruta Imprimir guía Peso facturable 66.2/1000 kg · Paquetes 6/10 · Libre 933.8 kg y 4 paquetes En furgon"
+ },
+ {
+  "nombre": "[rf31] compatibilidad: una guía consolidada cobrada antes del RF-31 explica por qué no tiene descuento",
+  "ok": true,
+  "detalle": "Identificación\nGuía\nENV-2026-00002\nEstado\nEntregado\nRegistro\n12/11/2026, 7:45:58 p. m.\nRuta\nRUTA-2026-0001\nPersonas\nRemi"
+ },
+ {
+  "nombre": "[rf26] el catálogo muestra la furgoneta individual como referencia del ahorro",
+  "ok": true,
+  "detalle": ": un viaje de furgoneta convencional por envío. Usa el factor de emisión del vehículo de combustión terrestre del catálogo (consolidado) y la capacidad de la furgoneta del catálogo (eléctrico); no introduce datos ajenos."
+ },
+ {
+  "nombre": "[rf32] el detalle desglosa base, peso, distancia, subtotal, cada recargo, descuento y total",
+  "ok": true,
+  "detalle": "Identificación\nGuía\nENV-2026-00044\nEstado\nRegistrado\nRegistro\n25/11/2026, 7:46:4"
+ },
+ {
+  "nombre": "[rf32] cada fila explica la regla aplicada (porcentaje o fórmula)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf33] moneda() da formato de colones con separador de miles",
+  "ok": true,
+  "detalle": "₡1 234 567"
+ },
+ {
+  "nombre": "[rf33] ningún otro módulo define su propio formato de moneda",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf34] los seis estados del enunciado, en orden",
+  "ok": true,
+  "detalle": "registrado,en bodega,asignado a ruta,en ruta,entregado,devuelto"
+ },
+ {
+  "nombre": "[rf34] «cancelado» se añade aparte como baja lógica (no es un estado del ciclo de vida)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf35] tabla explícita de transiciones",
+  "ok": true,
+  "detalle": "{\"registrado\":[\"en bodega\",\"devuelto\"],\"en bodega\":[\"devuelto\"],\"asignado a ruta\":[\"en bodega\"],\"en ruta\":[\"entregado\",\"devuelto\"],\"entregado\":[],\"devuelto\":[],\"cancelado\":[]}"
+ },
+ {
+  "nombre": "[rf35] desde «registrado» solo se ofrece pasar a «en bodega» o «devuelto»",
+  "ok": true,
+  "detalle": "devuelto,en bodega"
+ },
+ {
+  "nombre": "[rf35] un envío entregado no ofrece ningún cambio",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf36] cada cambio guarda estado anterior, estado nuevo y fecha-hora ISO",
+  "ok": true,
+  "detalle": "{\"estadoAnterior\":\"registrado\",\"estado\":\"en bodega\",\"fecha\":\"2026-11-26T01:46:41.498Z\",\"detalle\":\"Cambio manual de registrado a en bodega\"}"
+ },
+ {
+  "nombre": "[rf36] la línea de tiempo muestra el cambio con fecha y hora",
+  "ok": true,
+  "detalle": "Registrado → En bodega\n\nCambio manual de registrado a en bodega\n\n25/11/2026, 7:46:41 p. m.\nInicio → "
+ },
+ {
+  "nombre": "[rf38] estado + sucursal combinados dan la intersección esperada",
+  "ok": true,
+  "detalle": "5 de 5"
+ },
+ {
+  "nombre": "[rf38] estado + sucursal + texto sin coincidencias muestra el mensaje de filtros",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf38] «Limpiar filtros» restablece la tabla completa",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf38] el filtro de modalidad funciona",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf39] ordenar por total: ascendente y luego descendente",
+  "ok": true,
+  "detalle": "2323,2417,2436 / 15570,15180,14413"
+ },
+ {
+  "nombre": "[rf39] indicación visual (▲/▼) y aria-sort en la columna activa",
+  "ok": true,
+  "detalle": "ascending/descending"
+ },
+ {
+  "nombre": "[rf40] 5 por página: 5 filas y «Página 1 de N»",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf40] «Siguiente» avanza y habilita «Anterior»",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf40] cambiar el tamaño vuelve a la página 1",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf42] cada sucursal muestra paquetes, kg y % de su capacidad (sin cancelados)",
+  "ok": true,
+  "detalle": "San José Centro\n\n5 paquetes · 87.1 kg · 1.7%"
+ },
+ {
+  "nombre": "[rf43] al superar el umbral aparece una alerta de texto con la sucursal (no solo color)",
+  "ok": true,
+  "detalle": "Alerta: Limón Centro supera el umbral de ocupación (80%)."
+ },
+ {
+  "nombre": "[rf43] la región de alertas es aria-live=assertive",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf45] esRetenido(): excede el plazo → true; dentro del plazo → false; frío usa su plazo propio",
+  "ok": true,
+  "detalle": "[true,false,true,false,false,false]"
+ },
+ {
+  "nombre": "[rf46] distribución por tipo de contenido (general, frágil, cadena de frío)",
+  "ok": true,
+  "detalle": "General 8 Frágil 6 Cadena de frío 9"
+ },
+ {
+  "nombre": "[rf46] distribución por sucursal de destino",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf47] total de envíos (sin cancelados)",
+  "ok": true,
+  "detalle": "41"
+ },
+ {
+  "nombre": "[rf47] monto facturado y tarifa promedio",
+  "ok": true,
+  "detalle": "₡305 752 / ₡7 457"
+ },
+ {
+  "nombre": "[rf47] peso facturable total",
+  "ok": true,
+  "detalle": "666.4 vs 666.4"
+ },
+ {
+  "nombre": "[rf47] cantidad por estado",
+  "ok": true,
+  "detalle": "Registrado: 10  En bodega: 13  Asignado a ruta: 5  En ruta: 5  Entregado: 5  Devuelto: 3  Cancelado: 2"
+ },
+ {
+  "nombre": "[rf48] emisiones totales estimadas",
+  "ok": true,
+  "detalle": "25.374 kg vs 25.374"
+ },
+ {
+  "nombre": "[rf48] porcentaje de envíos en modalidades de baja emisión",
+  "ok": true,
+  "detalle": "36.6%"
+ },
+ {
+  "nombre": "[rf48] emisiones evitadas (modalidad limpia y consolidación) presentes",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf49] el panel calcula con map / filter / reduce / sort / slice",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf49] el cálculo del panel no usa ciclos for/while/forEach ni variables externas",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf49] ningún ciclo acumula con «+=» en una variable externa",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf49] sin acumuladores «+=» (excepto el contador de la demo)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf50] gráfico de barras con HTML y CSS puros",
+  "ok": true,
+  "detalle": 7
+ },
+ {
+  "nombre": "[rf50] gráfico de dona con conic-gradient (CSS)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf50] sin canvas ni bibliotecas de gráficos",
+  "ok": true,
+  "detalle": 0
+ },
+ {
+  "nombre": "[rf51] filtrar por sucursal recalcula los indicadores",
+  "ok": true,
+  "detalle": "12 vs 12"
+ },
+ {
+  "nombre": "[rf51] filtrar por rango de fechas recalcula los indicadores",
+  "ok": true,
+  "detalle": "5 vs 5"
+ },
+ {
+  "nombre": "[rf52] al registrar un envío el panel sube +1 sin recargar la página",
+  "ok": true,
+  "detalle": "41→42"
+ },
+ {
+  "nombre": "[rf52] al cancelar vuelve a bajar (sin recargar)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf53] ranking de las tres sucursales con menor emisión media por envío",
+  "ok": true,
+  "detalle": "Centro de Distribución Central: 0.111 kg CO₂e por envío | Heredia Centro: 0.222 kg CO₂e por envío | Alajuela Centro: 0.260 kg CO₂e por envío"
+ },
+ {
+  "nombre": "[rf55] la exportación descarga un .json con clientes, envíos, rutas y configuración",
+  "ok": true,
+  "detalle": "ecoruta-respaldo-2026-11-26.json"
+ },
+ {
+  "nombre": "[rf56] un archivo inválido se rechaza con mensaje y sin tocar los datos",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf56] una estructura incorrecta se rechaza indicando el problema",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf56] antes de importar advierte que reemplaza los datos y cuántos registros trae",
+  "ok": true,
+  "detalle": "El respaldo contiene 3 clientes, 0 envíos y 0 rutas. Reemplazará todos los datos actuales."
+ },
+ {
+  "nombre": "[rf56] al confirmar se reemplazan los datos",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf57] reiniciar pide dos confirmaciones distintas",
+  "ok": true,
+  "detalle": "Primera confirmación / Segunda confirmación"
+ },
+ {
+  "nombre": "[rf57] cancelar la segunda deja los datos intactos",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf57] confirmar las dos deja el sistema vacío",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf58] la demo trae ≥40 envíos, 15 clientes y 5 rutas",
+  "ok": true,
+  "detalle": "43/15/5"
+ },
+ {
+  "nombre": "[rf58] las rutas son utilizables: cada envío «en ruta» o «asignado» pertenece a una ruta coherente",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf58] hay envíos en todos los estados (incluidos retenidos, cancelados y devueltos)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf58] hay al menos un envío retenido y una ruta abierta vacía para probar",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rf59] muestra el espacio usado en localStorage (KB y % de 5 MB)",
+  "ok": true,
+  "detalle": "Uso aproximado: 125.5 KB de 5 MB (2.45%). Capacidad disponible."
+ },
+ {
+  "nombre": "[rf59] cerca del límite (≥80 %) advierte con texto",
+  "ok": true,
+  "detalle": "Uso aproximado: 4426.3 KB de 5 MB (86.45%). Advertencia: cerca del límite estimado."
+ },
+ {
+  "nombre": "[rn02] peso por debajo del mínimo: «El peso mínimo es 0.1 kg.»",
+  "ok": true,
+  "detalle": "El peso mínimo es 0.1 kg."
+ },
+ {
+  "nombre": "[rn02] los límites exactos (0.1 y 500 kg) son válidos",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rn02] peso por encima del máximo: «El peso máximo es 500 kg.»",
+  "ok": true,
+  "detalle": "El peso máximo es 500 kg."
+ },
+ {
+  "nombre": "[rn03] 200 cm es el límite (no excede); 201 cm excede",
+  "ok": true,
+  "detalle": "[false,true,0.2]"
+ },
+ {
+  "nombre": "[rn03] la sobredimensión autorizada añade el 20 % de recargo",
+  "ok": true,
+  "detalle": 0.2
+ },
+ {
+  "nombre": "[rn04] bicicleta viable hasta 25 kg y 30 km; no con 25.1 kg ni con 31 km",
+  "ok": true,
+  "detalle": "[true,false,false]"
+ },
+ {
+  "nombre": "[rn05] aéreo solo desde 120 km",
+  "ok": true,
+  "detalle": "[false,true,false]"
+ },
+ {
+  "nombre": "[rn06] Configuración expone los días máximos en bodega y los de cadena de frío",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rn06] el plazo de frío se guarda aparte del plazo normal",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rn09] un envío en ruta no puede editarse ni cancelarse (botones deshabilitados)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rn09] un envío entregado tampoco",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rn09] la regla vive en reglas.js (puedeCancelarse)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[rn11] baja emisión sin urgencia: descuento ecológico del 10 %",
+  "ok": true,
+  "detalle": "[339,0,847.5]"
+ },
+ {
+  "nombre": "[rn11] con urgencia: recargo sí, descuento no (no se acumulan)",
+  "ok": true,
+  "detalle": "[339,0,847.5]"
+ },
+ {
+  "nombre": "[rn11] modalidad consolidada: con urgencia tampoco se acumula el descuento",
+  "ok": true,
+  "detalle": "[305.1,0,762.75]"
+ },
+ {
+  "nombre": "[sem] usa header, nav, main, section, article, aside y footer",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[sem] los div son minoría frente a los elementos semánticos (sin «divitis»)",
+  "ok": true,
+  "detalle": "47 div vs 79 semánticos"
+ },
+ {
+  "nombre": "[sem] no hay atributos de estilo en línea fuera de las barras/dona dinámicas ni <center>/<font>",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[form] todos los controles tienen etiqueta (label/for o aria-label)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[form] los formularios principales usan fieldset con legend (clientes, solicitud, ruta, dimensiones)",
+  "ok": true,
+  "detalle": 4
+ },
+ {
+  "nombre": "[form] autocomplete en los datos personales del cliente",
+  "ok": true,
+  "detalle": 4
+ },
+ {
+  "nombre": "[form] usa tipos nativos (number, email, tel, date, datetime-local, checkbox)",
+  "ok": true,
+  "detalle": "search,date,hidden,text,tel,email,number,checkbox,datetime-local,file"
+ },
+ {
+  "nombre": "[tabla] toda tabla estática tiene caption, thead, tbody y th con scope",
+  "ok": true,
+  "detalle": "[]"
+ },
+ {
+  "nombre": "[tabla] sin tablas simuladas con display:table en el CSS de pantalla",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[tabla] los datos se pintan dentro de tbody",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[contraste] todos los pares texto/fondo de los dos temas cumplen WCAG AA (4.5:1 texto, 3:1 componentes)",
+  "ok": true,
+  "detalle": "  OK     8.24:1 menú lateral: activo | FALLOS: 0"
+ },
+ {
+  "nombre": "[live] las regiones dinámicas declaran aria-live",
+  "ok": true,
+  "detalle": "[]"
+ },
+ {
+  "nombre": "[live] al comparar, el resultado llega dentro de la región aria-live",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[live] los errores de formulario enlazan su mensaje con aria-describedby y aria-invalid",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[teclado] todos los campos de la solicitud se alcanzan con Tab y se llenan con el teclado",
+  "ok": true,
+  "detalle": "{\"remitente\":true,\"destinatario\":true,\"origen\":true,\"destino\":true,\"peso\":true,\"largo\":true,\"ancho\":true,\"alto\":true,\"contenido\":true,\"btn\":true}"
+ },
+ {
+  "nombre": "[teclado] el foco es visible (contorno o sombra) en el control activo",
+  "ok": true,
+  "detalle": "{\"outline\":\"solid\",\"ancho\":3,\"sombra\":\"none\"}"
+ },
+ {
+  "nombre": "[teclado] el registro se completa y confirma solo con el teclado",
+  "ok": true,
+  "detalle": "44"
+ },
+ {
+  "nombre": "[h1] cada una de las 8 vistas tiene exactamente un h1",
+  "ok": true,
+  "detalle": "[]"
+ },
+ {
+  "nombre": "[h1] sin saltos de nivel de encabezado (h1→h2→h3)",
+  "ok": true,
+  "detalle": "[]"
+ },
+ {
+  "nombre": "[noscript] existe <noscript> que explica que se requiere JavaScript y qué hacer",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] sin !important",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] Mobile-First: todas las consultas de ancho usan min-width y hay ≥3 puntos de quiebre",
+  "ok": true,
+  "detalle": "560, 1050, 1280, 1440"
+ },
+ {
+  "nombre": "[css] ≥3 puntos de quiebre (min-width)",
+  "ok": true,
+  "detalle": "560, 1050, 1280, 1440"
+ },
+ {
+  "nombre": "[css] tokens en :root: paleta, escala de espaciado (--esp-), escala tipográfica (--texto-) y radios (--radio)",
+  "ok": true,
+  "detalle": "128 tokens"
+ },
+ {
+  "nombre": "[css] espaciados y tamaños de letra solo mediante variables (sin valores rem sueltos)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] ningún color literal fuera de los tokens de :root (todo va por variables)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] Grid y Flexbox",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] tema oscuro con prefers-color-scheme y control manual [data-tema]",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] estados :hover, :focus-visible, :disabled y accesibilidad de validación ([aria-invalid])",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] prefers-reduced-motion anula animaciones y transiciones",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] tipografía del sistema (sin @font-face ni @import)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] sin reglas duplicadas (mismo selector y mismas declaraciones)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] la hoja de impresión también evita !important",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[css] las hojas se enlazan por separado (pantalla e impresión con media=\"print\")",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[deleg] la tabla de envíos tiene un único escuchador delegado",
+  "ok": true,
+  "detalle": 1
+ },
+ {
+  "nombre": "[deleg] ningún módulo enlaza escuchadores fila por fila (no hay addEventListener dentro de forEach/map sobre filas)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[deleg] una fila creada después del arranque responde a sus botones",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[persist] JSON.parse y JSON.stringify están dentro de try/catch",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[persist] datos corruptos en localStorage: la aplicación arranca con el estado inicial vacío",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[persist] datos corruptos: no hay errores no atendidos",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[persist] sin datos guardados el sistema arranca vacío",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[persist] el estado guardado lleva la versión de esquema (5) bajo la clave ecoruta_estado_v5",
+  "ok": true,
+  "detalle": 5
+ },
+ {
+  "nombre": "[persist] compatibilidad: el estado de una versión anterior (clave v4) se migra y sus eliminados pasan a «cancelado»",
+  "ok": true,
+  "detalle": "44 envíos, 3 cancelados"
+ },
+ {
+  "nombre": "[inmut] las funciones de cálculo aceptan argumentos congelados (Object.freeze profundo) sin lanzar errores",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[inmut] y los argumentos quedan idénticos tras el cálculo",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[modulos] un único script type=module como punto de entrada y sin scripts en línea",
+  "ok": true,
+  "detalle": "<script type=\"module\" src=\"js/app.js\">"
+ },
+ {
+  "nombre": "[modulos] ≥10 módulos con import/export",
+  "ok": true,
+  "detalle": 16
+ },
+ {
+  "nombre": "[modulos] un módulo por responsabilidad de negocio (clientes, envíos, rutas, seguimiento, inventario)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[modulos] sin var ni variables globales en window",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[puras] reglas.js no usa document, window, localStorage, fetch ni Date.now() implícito sin parámetro de prueba",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[puras] reglas.js no importa módulos con efectos (no importa nada)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[puras] validaciones.js tampoco toca el DOM ni el almacenamiento",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[consola] ninguna acción (válida o inválida) produce errores en la consola ni excepciones sin atender",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[cdn] index.html no carga nada externo (scripts, estilos ni fuentes)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[cdn] ningún módulo JS referencia URLs externas ni importa paquetes",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[cdn] no existen package.json ni node_modules en el proyecto",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[offline] sin conexión se puede registrar y consultar la operación ya cargada",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[offline] la navegación entre vistas sigue funcionando sin red",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[offline] si el catálogo no responde, se usa la última copia válida guardada en el navegador",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[legible] todo módulo abre con un comentario que explica su responsabilidad",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[legible] ≥ 95 % de las funciones de nivel superior tienen un comentario que explica su intención",
+  "ok": true,
+  "detalle": "144/144"
+ },
+ {
+  "nombre": "[legible] ≥ 5 % de las líneas son comentarios en español",
+  "ok": true,
+  "detalle": "8.1%"
+ },
+ {
+  "nombre": "[legible] código formateado (no minificado): sin archivos de una sola línea larga",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[legible] se usa const/let con nombres en español (sin var ni nombres de una letra en funciones de negocio)",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[readme] el README documenta la estructura de carpetas y cada archivo del proyecto",
+  "ok": true,
+  "detalle": ""
+ },
+ {
+  "nombre": "[readme] el README indica versión v2.3.0, cómo ejecutar y la clave de localStorage",
+  "ok": true,
+  "detalle": ""
+ }
+]

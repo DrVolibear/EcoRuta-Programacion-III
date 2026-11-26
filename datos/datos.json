@@ -3,8 +3,8 @@
   "sucursales": [
     {
       "codigo": "SJO-01",
-      "nombre": "San Jose Centro",
-      "provincia": "San Jose",
+      "nombre": "San José Centro",
+      "provincia": "San José",
       "capacidadKg": 5000,
       "modalidades": [
         "bicicleta",
@@ -53,8 +53,8 @@
     },
     {
       "codigo": "LIM-01",
-      "nombre": "Limon Centro",
-      "provincia": "Limon",
+      "nombre": "Limón Centro",
+      "provincia": "Limón",
       "capacidadKg": 2800,
       "modalidades": [
         "electrico",
@@ -77,8 +77,8 @@
     },
     {
       "codigo": "CD-CEN",
-      "nombre": "Centro de Distribucion Central",
-      "provincia": "San Jose",
+      "nombre": "Centro de Distribución Central",
+      "provincia": "San José",
       "capacidadKg": 12000,
       "modalidades": [
         "electrico",
@@ -160,7 +160,7 @@
     },
     {
       "codigo": "electrico",
-      "nombre": "Furgon electrico",
+      "nombre": "Furgón eléctrico",
       "factorEmision": 0.035,
       "capacidadKg": 800,
       "maxDistanciaKm": 220,
@@ -171,18 +171,19 @@
     },
     {
       "codigo": "consolidado",
-      "nombre": "Camion consolidado",
+      "nombre": "Camión consolidado",
       "factorEmision": 0.09,
       "capacidadKg": 5000,
       "maxDistanciaKm": 500,
       "velocidadKmH": 50,
       "bajaEmision": false,
+      "consolidada": true,
       "refrigerada": true,
       "factorTarifa": 0.9
     },
     {
       "codigo": "aereo",
-      "nombre": "Carga aerea",
+      "nombre": "Carga aérea",
       "factorEmision": 0.55,
       "capacidadKg": 1500,
       "minDistanciaKm": 120,
@@ -212,5 +213,13 @@
     "bicicletaPesoMaxKg": 25,
     "bicicletaDistanciaMaxKm": 30,
     "aereoDistanciaMinKm": 120
+  },
+  "referencias": {
+    "furgonetaIndividual": {
+      "nombre": "Furgoneta individual de combustión",
+      "factorEmision": 0.09,
+      "capacidadKg": 800,
+      "supuesto": "Línea base de RF-26: un viaje de furgoneta convencional por envío. Usa el factor de emisión del vehículo de combustión terrestre del catálogo (consolidado) y la capacidad de la furgoneta del catálogo (eléctrico); no introduce datos ajenos."
+    }
   }
 }

@@ -1,229 +1,265 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-tema="automatico">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>EcoRuta | Logistica sostenible</title>
+    <meta
+      name="description"
+      content="EcoRuta: gestión logística de bajo impacto para EcoEnvíos S.A."
+    />
+    <title>EcoRuta | Logística sostenible</title>
     <link rel="stylesheet" href="css/estilos.css" />
     <link rel="stylesheet" href="css/impresion.css" media="print" />
     <script type="module" src="js/app.js"></script>
   </head>
   <body>
-    <noscript
-      ><p class="alerta error">
-        EcoRuta requiere JavaScript. Active JavaScript y recargue.
-      </p></noscript
-    >
-    <div
-      id="estadoCarga"
-      class="pantalla-carga"
-      role="status"
-      aria-live="polite"
-    >
+    <noscript>
+      <p class="alerta error">
+        EcoRuta necesita JavaScript para funcionar. Active JavaScript en el navegador y recargue la
+        página.
+      </p>
+    </noscript>
+
+    <section id="estadoCarga" class="pantalla-carga" role="status" aria-live="polite">
       <div>
         <h1>EcoRuta</h1>
-        <p id="textoCarga">Cargando catalogo institucional...</p>
-        <button id="btnReintentar" hidden>Reintentar</button>
+        <p id="textoCarga">Cargando catálogo institucional...</p>
+        <button id="btnReintentar" type="button" hidden>Reintentar</button>
       </div>
-    </div>
+    </section>
+
     <div id="aplicacion" class="aplicacion" hidden>
       <aside class="lateral">
         <header class="marca">
           <span aria-hidden="true">♻</span>
-          <div><strong>EcoRuta</strong><small>Logistica sostenible</small></div>
+          <strong>EcoRuta</strong>
+          <small>Logística sostenible</small>
         </header>
-        <nav aria-label="Modulos">
-          <button class="nav-btn activo" data-vista="panel">Panel</button
-          ><button class="nav-btn" data-vista="registro">Registro</button
-          ><button class="nav-btn" data-vista="clientes">Clientes</button
-          ><button class="nav-btn" data-vista="catalogo">Catalogo</button
-          ><button class="nav-btn" data-vista="rutas">Despacho</button
-          ><button class="nav-btn" data-vista="seguimiento">Seguimiento</button
-          ><button class="nav-btn" data-vista="inventario">Inventario</button
-          ><button class="nav-btn" data-vista="configuracion">
-            Configuracion
-          </button>
+        <nav id="menuPrincipal" aria-label="Módulos">
+          <button type="button" class="nav-btn activo" data-vista="panel">Panel</button>
+          <button type="button" class="nav-btn" data-vista="registro">Registro</button>
+          <button type="button" class="nav-btn" data-vista="clientes">Clientes</button>
+          <button type="button" class="nav-btn" data-vista="catalogo">Catálogo</button>
+          <button type="button" class="nav-btn" data-vista="rutas">Despacho</button>
+          <button type="button" class="nav-btn" data-vista="seguimiento">Seguimiento</button>
+          <button type="button" class="nav-btn" data-vista="inventario">Inventario</button>
+          <button type="button" class="nav-btn" data-vista="configuracion">Configuración</button>
         </nav>
       </aside>
+
       <main>
         <header class="superior">
-          <button id="btnMenu" aria-label="Abrir menu">☰</button>
-          <div>
-            <small>Sistema interno</small
-            ><span id="tituloVista">Panel general</span>
+          <button
+            id="btnMenu"
+            type="button"
+            aria-label="Abrir menú"
+            aria-controls="menuPrincipal"
+            aria-expanded="false"
+          >
+            ☰
+          </button>
+          <p class="titulo-superior">
+            <small>Sistema interno</small>
+            <span id="tituloVista">Panel general</span>
+          </p>
+          <div class="busqueda-global" role="search">
+            <label class="sr-only" for="busquedaGlobal">Buscar guía, cliente o ruta</label>
+            <input
+              id="busquedaGlobal"
+              type="search"
+              placeholder="Buscar guía, cliente o ruta"
+              autocomplete="off"
+              aria-controls="resultadosGlobales"
+              aria-expanded="false"
+            />
+            <div
+              id="resultadosGlobales"
+              class="resultados-globales"
+              aria-live="polite"
+              hidden
+            ></div>
           </div>
-          <div class="busqueda-global"><label class="sr-only" for="busquedaGlobal">Buscar en EcoRuta</label><input id="busquedaGlobal" type="search" placeholder="Buscar guia, cliente o ruta" autocomplete="off"><div id="resultadosGlobales" class="resultados-globales" hidden></div></div><span class="insignia">EcoRuta v2.2.0</span>
+          <span class="insignia">EcoRuta v2.3.0</span>
         </header>
-        <div
-          id="toasts"
-          class="toasts"
-          aria-live="polite"
-          aria-atomic="true"
-        ></div>
+
+        <div id="toasts" class="toasts" role="status" aria-live="polite" aria-atomic="true"></div>
+
+        <!-- M8 · Panel -->
         <section id="panel" class="vista activa">
           <header>
             <p class="sobrelinea">M8</p>
             <h1>Panel de sostenibilidad</h1>
           </header>
           <article class="tarjeta filtros-envios">
-            <label for="panelFechaDesde"
-              >Desde<input id="panelFechaDesde" type="date" /></label
-            ><label for="panelFechaHasta"
-              >Hasta<input id="panelFechaHasta" type="date" /></label
-            ><label for="panelSucursal"
-              >Sucursal<select id="panelSucursal">
+            <label for="panelFechaDesde">Desde<input id="panelFechaDesde" type="date" /></label>
+            <label for="panelFechaHasta">Hasta<input id="panelFechaHasta" type="date" /></label>
+            <label for="panelSucursal"
+              >Sucursal
+              <select id="panelSucursal">
                 <option value="">Todas</option>
-              </select></label
-            ><button id="limpiarPanel" class="secundario">Limpiar panel</button>
+              </select>
+            </label>
+            <button id="limpiarPanel" type="button" class="secundario">Limpiar panel</button>
           </article>
-          <div class="kpis">
+          <div class="kpis" aria-live="polite">
+            <article><span>Envíos</span><strong id="kpiEnvios">0</strong></article>
+            <article><span>Facturado</span><strong id="kpiFacturado">₡0</strong></article>
+            <article><span>Tarifa promedio</span><strong id="kpiPromedio">₡0</strong></article>
+            <article><span>Peso facturable</span><strong id="kpiPeso">0 kg</strong></article>
+            <article><span>Emisiones</span><strong id="kpiEmisiones">0 kg</strong></article>
             <article>
-              <span>Envios</span><strong id="kpiEnvios">0</strong>
+              <span>Evitadas (modalidad limpia)</span><strong id="kpiEvitadasLimpias">0 kg</strong>
             </article>
             <article>
-              <span>Facturado</span><strong id="kpiFacturado">₡0</strong>
-            </article>
-            <article>
-              <span>Tarifa promedio</span><strong id="kpiPromedio">₡0</strong>
-            </article>
-            <article>
-              <span>Peso</span><strong id="kpiPeso">0 kg</strong>
-            </article>
-            <article>
-              <span>Emisiones</span><strong id="kpiEmisiones">0 kg</strong>
-            </article>
-            <article>
-              <span>Evitadas limpias</span
-              ><strong id="kpiEvitadasLimpias">0 kg</strong>
-            </article>
-            <article>
-              <span>Evitadas consolidadas</span
+              <span>Evitadas (consolidación)</span
               ><strong id="kpiEvitadasConsolidadas">0 kg</strong>
             </article>
-            <article>
-              <span>Baja emision</span
-              ><strong id="kpiPorcentajeLimpio">0%</strong>
-            </article>
+            <article><span>Baja emisión</span><strong id="kpiPorcentajeLimpio">0%</strong></article>
           </div>
           <div class="dos-columnas">
             <article class="tarjeta">
-              <h2>Envios por sucursal</h2>
+              <h2>Envíos por sucursal de origen</h2>
               <div id="graficoSucursales" class="barras"></div>
             </article>
             <article class="tarjeta">
-              <h2>Participacion por modalidad</h2>
+              <h2>Participación por modalidad</h2>
               <div
                 id="graficoModalidades"
-                class="barra-apilada"
-                aria-label="Participacion por modalidad"
+                class="grafico-dona"
+                role="img"
+                aria-label="Participación por modalidad"
               ></div>
-              <div id="leyendaModalidades"></div>
+              <ul id="leyendaModalidades" class="leyenda-modalidades"></ul>
             </article>
             <article class="tarjeta">
               <h2>Cantidad por estado</h2>
-              <div id="resumenEstados"></div>
+              <div id="resumenEstados" class="contador-estado"></div>
             </article>
             <article class="tarjeta">
               <h2>Ranking ambiental</h2>
+              <p class="texto-ayuda">
+                Las tres sucursales de origen con menor emisión promedio por envío (kg CO₂e).
+              </p>
               <ol id="rankingSucursales"></ol>
             </article>
           </div>
         </section>
+
+        <!-- M2 · Clientes -->
         <section id="clientes" class="vista">
           <header>
             <p class="sobrelinea">M2</p>
-            <h1>Gestion de clientes</h1>
+            <h1>Gestión de clientes</h1>
           </header>
           <div class="dos-columnas">
             <article class="tarjeta">
               <h2 id="tituloCliente">Nuevo cliente</h2>
               <form id="formCliente">
-                <input id="clienteId" type="hidden" /><label
-                  for="identificacion"
-                  >Identificacion *</label
-                ><input
-                  id="identificacion"
-                  required
-                  maxlength="20"
-                  pattern="[0-9-]{7,20}"
-                /><label for="nombre">Nombre *</label
-                ><input
-                  id="nombre"
-                  required
-                  maxlength="80"
-                  autocomplete="name"
-                /><label for="telefono">Telefono *</label
-                ><input
-                  id="telefono"
-                  required
-                  pattern="[0-9]{4}-[0-9]{4}"
-                  placeholder="8888-8888"
-                  autocomplete="tel"
-                /><label for="correo">Correo *</label
-                ><input
-                  id="correo"
-                  type="email"
-                  required
-                  autocomplete="email"
-                /><label for="direccion">Direccion *</label
-                ><input
-                  id="direccion"
-                  required
-                  autocomplete="street-address"
-                /><label for="codigoPostal">Codigo postal *</label
-                ><input
-                  id="codigoPostal"
-                  required
-                  pattern="[0-9]{5}"
-                  maxlength="5"
-                  inputmode="numeric"
-                /><label for="provincia">Provincia *</label
-                ><select id="provincia" required>
-                  <option value="">Seleccione</option>
-                  <option>San Jose</option>
-                  <option>Alajuela</option>
-                  <option>Cartago</option>
-                  <option>Heredia</option>
-                  <option>Guanacaste</option>
-                  <option>Puntarenas</option>
-                  <option>Limon</option>
-                </select>
+                <input id="clienteId" type="hidden" />
+                <fieldset>
+                  <legend>Datos del cliente (* obligatorio)</legend>
+                  <label for="identificacion">Identificación *</label>
+                  <input
+                    id="identificacion"
+                    required
+                    maxlength="20"
+                    pattern="[0-9\-]{7,20}"
+                    inputmode="numeric"
+                    autocomplete="off"
+                  />
+                  <label for="nombre">Nombre *</label>
+                  <input id="nombre" required maxlength="80" autocomplete="name" />
+                  <label for="telefono">Teléfono *</label>
+                  <input
+                    id="telefono"
+                    type="tel"
+                    required
+                    maxlength="9"
+                    pattern="[0-9]{4}-[0-9]{4}"
+                    placeholder="8888-8888"
+                    inputmode="numeric"
+                    autocomplete="tel"
+                  />
+                  <label for="correo">Correo *</label>
+                  <input
+                    id="correo"
+                    type="email"
+                    required
+                    maxlength="120"
+                    pattern="[^\s@]+@[^\s@]+\.[^\s@.]+"
+                    autocomplete="email"
+                  />
+                  <label for="direccion">Dirección *</label>
+                  <input id="direccion" required maxlength="160" autocomplete="street-address" />
+                  <label for="codigoPostal">Código postal *</label>
+                  <input
+                    id="codigoPostal"
+                    required
+                    pattern="[0-9]{5}"
+                    maxlength="5"
+                    inputmode="numeric"
+                    autocomplete="postal-code"
+                  />
+                  <label for="provincia">Provincia *</label>
+                  <select id="provincia" required>
+                    <option value="">Seleccione</option>
+                    <option>San José</option>
+                    <option>Alajuela</option>
+                    <option>Cartago</option>
+                    <option>Heredia</option>
+                    <option>Guanacaste</option>
+                    <option>Puntarenas</option>
+                    <option>Limón</option>
+                  </select>
+                </fieldset>
                 <div class="acciones">
-                  <button>Guardar cliente</button
-                  ><button
-                    id="cancelarCliente"
-                    type="button"
-                    class="secundario"
-                    hidden
-                  >
-                    Cancelar
+                  <button type="submit">Guardar cliente</button>
+                  <button id="cancelarCliente" type="button" class="secundario" hidden>
+                    Cancelar edición
                   </button>
                 </div>
               </form>
             </article>
             <article class="tarjeta">
               <h2>Clientes registrados</h2>
-              <label for="buscarCliente">Busqueda incremental</label
-              ><input
+              <label for="buscarCliente">Búsqueda incremental</label>
+              <input
                 id="buscarCliente"
                 type="search"
-                placeholder="Nombre, identificacion o correo"
+                placeholder="Nombre, identificación o correo"
+                autocomplete="off"
               />
-              <div id="listaClientes"></div>
+              <div class="tabla-scroll">
+                <table class="tabla-clientes">
+                  <caption>
+                    Clientes registrados
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Cliente</th>
+                      <th scope="col">Contacto</th>
+                      <th scope="col">Ubicación</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="listaClientes" aria-live="polite"></tbody>
+                </table>
+              </div>
             </article>
           </div>
-          <dialog id="dialogoHistorialCliente">
+          <dialog id="dialogoHistorialCliente" aria-labelledby="tituloHistorialCliente">
             <article>
               <header class="fila">
-                <h2 id="tituloHistorialCliente">Historial de envios</h2>
-                <button id="cerrarHistorialCliente" class="secundario">
-                  Cerrar
-                </button>
+                <h2 id="tituloHistorialCliente">Historial de envíos</h2>
+                <button id="cerrarHistorialCliente" type="button" class="secundario">Cerrar</button>
               </header>
               <div id="contenidoHistorialCliente"></div>
             </article>
           </dialog>
         </section>
+
+        <!-- M1 + M5 · Registro -->
         <section id="registro" class="vista">
           <header>
             <p class="sobrelinea">M1 + M5</p>
@@ -231,170 +267,224 @@
           </header>
           <div class="dos-columnas">
             <article class="tarjeta">
+              <h2>Nueva solicitud (* obligatorio)</h2>
               <form id="formEnvio">
                 <input id="guiaEdicion" type="hidden" />
                 <fieldset>
                   <legend>Personas</legend>
-                  <label for="buscarRemitente">Buscar remitente</label
-                  ><input
+                  <label for="buscarRemitente">Buscar remitente</label>
+                  <input
                     id="buscarRemitente"
                     type="search"
                     placeholder="Nombre, ID o correo"
-                  /><label for="remitente">Remitente</label
-                  ><select id="remitente" required></select
-                  ><label for="buscarDestinatario">Buscar destinatario</label
-                  ><input
+                    autocomplete="off"
+                  />
+                  <label for="remitente">Remitente *</label>
+                  <select id="remitente" required></select>
+                  <small id="datosRemitente" class="texto-ayuda" aria-live="polite"></small>
+                  <label for="buscarDestinatario">Buscar destinatario</label>
+                  <input
                     id="buscarDestinatario"
                     type="search"
                     placeholder="Nombre, ID o correo"
-                  /><label for="destinatario">Destinatario</label
-                  ><select id="destinatario" required></select>
+                    autocomplete="off"
+                  />
+                  <label for="destinatario">Destinatario *</label>
+                  <select id="destinatario" required></select>
+                  <small id="datosDestinatario" class="texto-ayuda" aria-live="polite"></small>
                 </fieldset>
                 <fieldset>
                   <legend>Trayecto y paquete</legend>
-                  <label for="origen">Origen</label
-                  ><select id="origen" required></select
-                  ><label for="destino">Destino</label
-                  ><select id="destino" required></select
-                  ><label for="peso">Peso real (kg)</label
-                  ><input
-                    id="peso"
-                    type="number"
-                    min="0.1"
-                    max="500"
-                    step="0.1"
-                    required
-                  />
-                  <div class="triple">
-                    <label for="largo">Largo</label
-                    ><input
-                      id="largo"
+                  <label for="origen">Origen *</label>
+                  <select id="origen" required></select>
+                  <label for="destino">Destino *</label>
+                  <select id="destino" required></select>
+                  <label for="peso">Peso real (kg) *</label>
+                  <span class="campo-unidad">
+                    <input
+                      id="peso"
                       type="number"
-                      min="1"
-                      max="300"
-                      required
-                    /><label for="ancho">Ancho</label
-                    ><input
-                      id="ancho"
-                      type="number"
-                      min="1"
-                      max="300"
-                      required
-                    /><label for="alto">Alto</label
-                    ><input
-                      id="alto"
-                      type="number"
-                      min="1"
-                      max="300"
+                      min="0.1"
+                      max="500"
+                      step="0.1"
+                      inputmode="decimal"
                       required
                     />
-                  </div>
-                  <label for="contenido">Contenido</label
-                  ><select id="contenido">
+                    <span class="unidad" aria-hidden="true">kg</span>
+                  </span>
+                  <fieldset class="dimensiones">
+                    <legend>Dimensiones: largo × ancho × alto</legend>
+                    <div class="grupo-dimension">
+                      <label for="largo">Largo (cm) *</label>
+                      <span class="campo-unidad">
+                        <input
+                          id="largo"
+                          type="number"
+                          min="1"
+                          max="300"
+                          step="1"
+                          inputmode="numeric"
+                          required
+                        />
+                        <span class="unidad" aria-hidden="true">cm</span>
+                      </span>
+                    </div>
+                    <div class="grupo-dimension">
+                      <label for="ancho">Ancho (cm) *</label>
+                      <span class="campo-unidad">
+                        <input
+                          id="ancho"
+                          type="number"
+                          min="1"
+                          max="300"
+                          step="1"
+                          inputmode="numeric"
+                          required
+                        />
+                        <span class="unidad" aria-hidden="true">cm</span>
+                      </span>
+                    </div>
+                    <div class="grupo-dimension">
+                      <label for="alto">Alto (cm) *</label>
+                      <span class="campo-unidad">
+                        <input
+                          id="alto"
+                          type="number"
+                          min="1"
+                          max="300"
+                          step="1"
+                          inputmode="numeric"
+                          required
+                        />
+                        <span class="unidad" aria-hidden="true">cm</span>
+                      </span>
+                    </div>
+                  </fieldset>
+                  <label for="contenido">Contenido *</label>
+                  <select id="contenido" required>
                     <option value="general">General</option>
-                    <option value="fragil">Fragil</option>
-                    <option value="frio">Cadena de frio</option></select
-                  ><label class="check"
-                    ><input id="urgente" type="checkbox" /> Urgente</label
-                  ><label class="check"
-                    ><input id="autorizacionSobredimension" type="checkbox" />
-                    Sobredimension autorizada</label
-                  ><label for="responsableAutorizacion"
-                    >Responsable de autorizacion</label
-                  ><input id="responsableAutorizacion" maxlength="80" />
+                    <option value="fragil">Frágil</option>
+                    <option value="frio">Cadena de frío</option>
+                  </select>
+                  <label class="check"><input id="urgente" type="checkbox" /> Urgente</label>
+                  <label class="check"
+                    ><input id="autorizacionSobredimension" type="checkbox" /> Sobredimensión
+                    autorizada</label
+                  >
+                  <label for="responsableAutorizacion" id="etiquetaResponsable"
+                    >Responsable de autorización</label
+                  >
+                  <input
+                    id="responsableAutorizacion"
+                    maxlength="80"
+                    autocomplete="off"
+                    disabled
+                    aria-describedby="ayudaResponsable"
+                  />
+                  <small id="ayudaResponsable" class="texto-ayuda"
+                    >Se habilita al marcar Sobredimensión autorizada.</small
+                  >
                 </fieldset>
                 <div class="acciones">
-                  <button id="btnComparar">Comparar modalidades</button
-                  ><button
-                    id="cancelarEdicionEnvio"
-                    type="button"
-                    class="secundario"
-                    hidden
-                  >
-                    Cancelar edicion
+                  <button id="btnComparar" type="submit">Comparar modalidades</button>
+                  <button id="cancelarEdicionEnvio" type="button" class="secundario" hidden>
+                    Cancelar edición
                   </button>
                 </div>
               </form>
             </article>
             <article class="tarjeta">
-              <h2>Comparacion y resumen</h2>
-              <div id="comparacion">
+              <h2>Comparación y resumen</h2>
+              <div id="comparacion" aria-live="polite">
                 <p class="vacio">Complete el formulario.</p>
               </div>
             </article>
           </div>
+
           <article class="tarjeta">
             <header class="fila">
               <div>
                 <h2>Solicitudes registradas</h2>
                 <p id="contadorSolicitudes" aria-live="polite">0 solicitudes</p>
               </div>
-              <button id="limpiarFiltrosEnvios" class="secundario">
+              <button id="limpiarFiltrosEnvios" type="button" class="secundario">
                 Limpiar filtros
               </button>
             </header>
+            <ul id="conteosEnvios" class="conteos" aria-label="Conteo de envíos">
+              <li><span>Activos</span><strong id="conteoActivos">0</strong></li>
+              <li><span>Cancelados</span><strong id="conteoCancelados">0</strong></li>
+              <li><span>Históricos</span><strong id="conteoHistoricos">0</strong></li>
+              <li><span>Total general</span><strong id="conteoTotal">0</strong></li>
+            </ul>
             <div class="filtros-envios">
               <label for="buscarEnvio"
-                >Texto libre<input id="buscarEnvio" type="search" /></label
-              ><label for="filtroModalidadEnvio"
-                >Modalidad<select id="filtroModalidadEnvio">
+                >Texto libre<input id="buscarEnvio" type="search" autocomplete="off"
+              /></label>
+              <label for="filtroModalidadEnvio"
+                >Modalidad
+                <select id="filtroModalidadEnvio">
                   <option value="">Todas</option>
-                </select></label
-              ><label for="filtroEstadoEnvio"
-                >Estado<select id="filtroEstadoEnvio">
+                </select>
+              </label>
+              <label for="filtroEstadoEnvio"
+                >Estado
+                <select id="filtroEstadoEnvio">
                   <option value="">Todos</option>
-                </select></label
-              ><label for="filtroSucursalEnvio"
-                >Sucursal<select id="filtroSucursalEnvio">
+                </select>
+              </label>
+              <label for="filtroSucursalEnvio"
+                >Sucursal
+                <select id="filtroSucursalEnvio">
                   <option value="">Todas</option>
-                </select></label
-              ><label for="filtroFechaDesde"
-                >Desde<input id="filtroFechaDesde" type="date" /></label
-              ><label for="filtroFechaHasta"
-                >Hasta<input id="filtroFechaHasta" type="date" /></label
-              ><label for="cantidadEnviosPagina"
-                >Por pagina<select id="cantidadEnviosPagina">
+                </select>
+              </label>
+              <label for="filtroFechaDesde">Desde<input id="filtroFechaDesde" type="date" /></label>
+              <label for="filtroFechaHasta">Hasta<input id="filtroFechaHasta" type="date" /></label>
+              <label for="cantidadEnviosPagina"
+                >Por página
+                <select id="cantidadEnviosPagina">
                   <option>5</option>
                   <option>10</option>
                   <option>20</option>
-                </select></label
-              >
+                </select>
+              </label>
             </div>
             <div class="tabla-scroll">
               <table>
                 <caption>
-                  Envios del sistema
+                  Envíos del sistema
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">
-                      <button class="orden-columna" data-orden="guia">
-                        Guia <span></span>
+                    <th scope="col" aria-sort="none">
+                      <button type="button" class="orden-columna" data-orden="guia">
+                        Guía <span aria-hidden="true"></span>
                       </button>
                     </th>
-                    <th scope="col">
-                      <button class="orden-columna" data-orden="trayecto">
-                        Trayecto <span></span>
+                    <th scope="col" aria-sort="none">
+                      <button type="button" class="orden-columna" data-orden="trayecto">
+                        Trayecto <span aria-hidden="true"></span>
                       </button>
                     </th>
-                    <th scope="col">
-                      <button class="orden-columna" data-orden="modalidad">
-                        Modalidad <span></span>
+                    <th scope="col" aria-sort="none">
+                      <button type="button" class="orden-columna" data-orden="modalidad">
+                        Modalidad <span aria-hidden="true"></span>
                       </button>
                     </th>
-                    <th scope="col">
-                      <button class="orden-columna" data-orden="total">
-                        Total <span></span>
+                    <th scope="col" aria-sort="none">
+                      <button type="button" class="orden-columna" data-orden="total">
+                        Total <span aria-hidden="true"></span>
                       </button>
                     </th>
-                    <th scope="col">
-                      <button class="orden-columna" data-orden="estado">
-                        Estado <span></span>
+                    <th scope="col" aria-sort="none">
+                      <button type="button" class="orden-columna" data-orden="estado">
+                        Estado <span aria-hidden="true"></span>
                       </button>
                     </th>
-                    <th scope="col">
-                      <button class="orden-columna" data-orden="fecha">
-                        Fecha <span></span>
+                    <th scope="col" aria-sort="none">
+                      <button type="button" class="orden-columna" data-orden="fecha">
+                        Fecha <span aria-hidden="true"></span>
                       </button>
                     </th>
                     <th scope="col">Acciones</th>
@@ -403,53 +493,33 @@
                 <tbody id="tablaEnvios"></tbody>
               </table>
             </div>
-            <nav class="paginacion-envios" aria-label="Paginacion">
-              <button id="paginaAnteriorEnvios" class="secundario">
-                Anterior
-              </button>
-              <p id="informacionPaginaEnvios">Pagina 0 de 0</p>
-              <button id="paginaSiguienteEnvios" class="secundario">
-                Siguiente
-              </button>
+            <nav class="paginacion-envios" aria-label="Paginación de envíos">
+              <button id="paginaAnteriorEnvios" type="button" class="secundario">Anterior</button>
+              <p id="informacionPaginaEnvios" aria-live="polite">Página 0 de 0</p>
+              <button id="paginaSiguienteEnvios" type="button" class="secundario">Siguiente</button>
             </nav>
           </article>
-          <dialog id="dialogoEnvio" class="dialogo-envio">
+
+          <dialog id="dialogoEnvio" class="dialogo-envio" aria-labelledby="tituloDetalleEnvio">
             <article>
               <header class="fila">
                 <h2 id="tituloDetalleEnvio">Detalle</h2>
                 <div class="acciones">
-                  <button id="irSeguimientoEnvio">Seguimiento</button
-                  ><button id="imprimirDetalleEnvio">Imprimir</button
-                  ><button id="cerrarDetalleEnvio" class="secundario">
-                    Cerrar
-                  </button>
+                  <button id="irSeguimientoEnvio" type="button">Seguimiento</button>
+                  <button id="imprimirDetalleEnvio" type="button">Imprimir</button>
+                  <button id="cerrarDetalleEnvio" type="button" class="secundario">Cerrar</button>
                 </div>
               </header>
               <div id="contenidoDetalleEnvio"></div>
             </article>
           </dialog>
-          <dialog id="dialogoEliminarEnvio">
-            <form id="formEliminarEnvio" method="dialog">
-              <h2>Cancelar envio</h2><div id="resumenEliminacionEnvio" class="alerta"></div>
-              <label for="motivoEliminacion">Motivo obligatorio</label
-              ><textarea
-                id="motivoEliminacion"
-                required
-                aria-describedby="ayudaMotivoEliminacion"
-                minlength="10"
-              ></textarea>
-              <small id="ayudaMotivoEliminacion">Explique el motivo en al menos 10 caracteres. <strong id="contadorMotivoEliminacion">0/10</strong></small>
-              <div class="acciones">
-                <button value="cancel" class="secundario">Cancelar</button
-                ><button id="confirmarEliminacionEnvio" value="confirm" class="peligro" disabled>Cancelar envio</button>
-              </div>
-            </form>
-          </dialog>
         </section>
+
+        <!-- M3 · Catálogo -->
         <section id="catalogo" class="vista">
           <header>
             <p class="sobrelinea">M3</p>
-            <h1>Catalogo institucional</h1>
+            <h1>Catálogo institucional</h1>
           </header>
           <div id="catalogoSucursales" class="rejilla"></div>
           <article class="tarjeta">
@@ -458,51 +528,56 @@
             <div id="catalogoTarifas"></div>
           </article>
         </section>
+
+        <!-- M4 · Despacho -->
         <section id="rutas" class="vista">
           <header>
             <p class="sobrelinea">M4</p>
-            <h1>Despacho y consolidacion de rutas</h1>
+            <h1>Despacho y consolidación de rutas</h1>
           </header>
           <div class="dos-columnas">
             <article class="tarjeta">
               <h2>Nueva ruta de despacho</h2>
               <form id="formRuta">
-                <label for="rutaDestino">Destino</label
-                ><select id="rutaDestino" required></select
-                ><label for="rutaModalidad">Modalidad</label
-                ><select id="rutaModalidad" required></select
-                ><label for="rutaFechaSalida">Fecha de salida</label
-                ><input
-                  id="rutaFechaSalida"
-                  type="datetime-local"
-                  required
-                /><label for="rutaCapacidadPeso">Capacidad kg</label
-                ><input
-                  id="rutaCapacidadPeso"
-                  type="number"
-                  min="1"
-                  required
-                /><small id="ayudaCapacidadRuta" class="texto-ayuda">Seleccione una modalidad para cargar su capacidad maxima.</small><label for="rutaCapacidadCantidad"
-                  >Capacidad de paquetes</label
-                ><input
-                  id="rutaCapacidadCantidad"
-                  type="number"
-                  min="1"
-                  required
-                /><button>Crear ruta</button>
+                <label for="rutaDestino">Destino *</label>
+                <select id="rutaDestino" required></select>
+                <label for="rutaModalidad">Modalidad *</label>
+                <select id="rutaModalidad" required></select>
+                <label for="rutaFechaSalida">Fecha de salida *</label>
+                <input id="rutaFechaSalida" type="datetime-local" required />
+                <label for="rutaCapacidadPeso">Capacidad operativa (kg) *</label>
+                <span class="campo-unidad">
+                  <input
+                    id="rutaCapacidadPeso"
+                    type="number"
+                    min="1"
+                    step="any"
+                    required
+                    aria-describedby="ayudaCapacidadRuta"
+                  />
+                  <span class="unidad" aria-hidden="true">kg</span>
+                </span>
+                <small id="ayudaCapacidadRuta" class="texto-ayuda" aria-live="polite"
+                  >Seleccione una modalidad para cargar su capacidad máxima.</small
+                >
+                <label for="rutaCapacidadCantidad">Capacidad de paquetes *</label>
+                <input id="rutaCapacidadCantidad" type="number" min="1" step="1" required />
+                <button type="submit">Crear ruta</button>
               </form>
             </article>
             <article class="tarjeta">
-              <h2>Envios disponibles</h2>
-              <p>Solo se muestran envios en bodega.</p>
-              <div id="enviosDisponiblesRuta"></div>
+              <h2>Envíos disponibles</h2>
+              <p>Solo se muestran envíos en bodega.</p>
+              <div id="enviosDisponiblesRuta" aria-live="polite"></div>
             </article>
           </div>
           <article class="tarjeta">
             <h2>Rutas de despacho</h2>
-            <div id="listaRutas"></div>
+            <div id="listaRutas" aria-live="polite"></div>
           </article>
         </section>
+
+        <!-- M6 · Seguimiento -->
         <section id="seguimiento" class="vista">
           <header>
             <p class="sobrelinea">M6</p>
@@ -511,59 +586,86 @@
           <div class="dos-columnas">
             <article class="tarjeta">
               <form id="formSeguimiento">
-                <label for="guiaSeguimiento">Codigo de guia</label
-                ><input
+                <label for="guiaSeguimiento">Código de guía</label>
+                <input
                   id="guiaSeguimiento"
                   required
+                  maxlength="20"
                   pattern="ENV-[0-9]{4}-[0-9]{5}"
-                /><button>Buscar</button>
+                  placeholder="ENV-2026-00001"
+                  autocomplete="off"
+                  aria-describedby="ayudaGuia"
+                />
+                <small id="ayudaGuia" class="texto-ayuda"
+                  >Formato ENV-AAAA-00000. Se convierte a mayúsculas automáticamente.</small
+                >
+                <button type="submit">Buscar</button>
               </form>
-              <div id="resultadoSeguimiento"></div>
+              <h2>Ficha del envío</h2>
+              <div id="resultadoSeguimiento" aria-live="polite"></div>
             </article>
             <article class="tarjeta">
-              <h2>Linea de tiempo</h2>
+              <h2>Línea de tiempo</h2>
               <div id="historialSeguimiento"></div>
             </article>
           </div>
         </section>
+
+        <!-- M7 · Inventario -->
         <section id="inventario" class="vista">
           <header>
             <p class="sobrelinea">M7</p>
-            <h1>Inventario del centro de distribucion</h1>
+            <h1>Inventario del centro de distribución</h1>
           </header>
           <div id="alertasInventario" aria-live="assertive"></div>
-          <article class="tarjeta pendientes-ingreso"><header class="fila"><div><p class="sobrelinea">Recepcion</p><h2>Pendientes de ingreso a bodega</h2></div><strong id="totalPendientesIngreso">0 pendientes</strong></header><p class="texto-ayuda">Solicitudes registradas, incluidos reenvios, que aun no han sido recibidas fisicamente.</p><div id="pendientesIngreso" class="rejilla"></div></article>
+          <article class="tarjeta pendientes-ingreso">
+            <header class="fila">
+              <div>
+                <p class="sobrelinea">Recepción</p>
+                <h2>Pendientes de ingreso a bodega</h2>
+              </div>
+              <strong id="totalPendientesIngreso" aria-live="polite">0 pendientes</strong>
+            </header>
+            <p class="texto-ayuda">
+              Solicitudes registradas, incluidos reenvíos, que aún no han sido recibidas
+              físicamente.
+            </p>
+            <div id="pendientesIngreso" class="rejilla"></div>
+          </article>
           <div id="ocupacionSucursales" class="rejilla"></div>
           <article class="tarjeta filtros-envios">
             <label for="filtroInventarioSucursal"
-              >Sucursal<select id="filtroInventarioSucursal">
+              >Sucursal
+              <select id="filtroInventarioSucursal">
                 <option value="">Todas</option>
-              </select></label
-            ><label for="filtroInventarioEstado"
-              >Estado<select id="filtroInventarioEstado">
+              </select>
+            </label>
+            <label for="filtroInventarioEstado"
+              >Estado
+              <select id="filtroInventarioEstado">
                 <option value="">Todos</option>
-              </select></label
-            >
+              </select>
+            </label>
           </article>
           <article class="tarjeta">
             <header class="fila">
               <h2>Paquetes en inventario</h2>
-              <strong id="totalInventario">0 paquetes</strong>
+              <strong id="totalInventario" aria-live="polite">0 paquetes</strong>
             </header>
             <div class="tabla-scroll">
               <table>
                 <caption>
-                  Paquetes ordenados por antiguedad
+                  Paquetes ordenados por antigüedad
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Guia</th>
+                    <th scope="col">Guía</th>
                     <th scope="col">Sucursal</th>
                     <th scope="col">Destino</th>
                     <th scope="col">Contenido</th>
-                    <th scope="col">Peso</th>
-                    <th scope="col">Dias</th>
-                    <th scope="col">Situacion</th>
+                    <th scope="col">Peso facturable</th>
+                    <th scope="col">Tiempo en bodega</th>
+                    <th scope="col">Situación</th>
                   </tr>
                 </thead>
                 <tbody id="tablaInventario"></tbody>
@@ -572,65 +674,98 @@
           </article>
           <div class="dos-columnas">
             <article class="tarjeta">
-              <h2>Distribucion por contenido</h2>
+              <h2>Distribución por contenido</h2>
               <div id="inventarioPorContenido" class="barras"></div>
             </article>
             <article class="tarjeta">
-              <h2>Distribucion por destino</h2>
+              <h2>Distribución por destino</h2>
               <div id="inventarioPorDestino" class="barras"></div>
             </article>
           </div>
         </section>
+
+        <!-- M9 · Configuración -->
         <section id="configuracion" class="vista">
           <header>
             <p class="sobrelinea">M9</p>
-            <h1>Configuracion, respaldo y restauracion</h1>
+            <h1>Configuración, respaldo y restauración</h1>
           </header>
           <article class="tarjeta">
-            <label for="tema">Tema</label
-            ><select id="tema">
-              <option value="automatico">Automatico</option>
+            <h2>Preferencias</h2>
+            <label for="tema">Tema</label>
+            <select id="tema">
+              <option value="automatico">Automático</option>
               <option value="claro">Claro</option>
-              <option value="oscuro">Oscuro</option></select
-            ><label for="umbralOcupacion">Umbral de ocupacion (%)</label
-            ><input
-              id="umbralOcupacion"
-              type="number"
-              min="50"
-              max="100"
-            /><label for="diasRetencion">Dias maximos en bodega</label
-            ><input id="diasRetencion" type="number" min="1" max="30" />
+              <option value="oscuro">Oscuro</option>
+            </select>
+            <label for="umbralOcupacion">Umbral de ocupación (%)</label>
+            <input id="umbralOcupacion" type="number" min="50" max="100" />
+            <label for="diasRetencion">Días máximos en bodega</label>
+            <input id="diasRetencion" type="number" min="1" max="30" />
+            <label for="diasRetencionFrio">Días máximos en bodega (cadena de frío)</label>
+            <input id="diasRetencionFrio" type="number" min="1" max="30" />
+          </article>
+          <article class="tarjeta">
+            <h2>Respaldo y datos</h2>
             <p id="usoAlmacenamiento" aria-live="polite"></p>
             <div class="acciones">
-              <button id="exportarRespaldo">Exportar JSON</button
-              ><label class="boton-archivo"
-                >Importar JSON<input
-                  id="importarRespaldo"
-                  type="file"
-                  accept="application/json"
-                  hidden /></label
-              ><button id="cargarDemo" class="secundario">
-                Cargar demo 40/15/5</button
-              ><button id="restablecerDatos" class="peligro">
-                Restablecer
+              <button id="exportarRespaldo" type="button">Exportar JSON</button>
+              <label class="boton-archivo"
+                >Importar JSON
+                <input id="importarRespaldo" type="file" accept="application/json" hidden />
+              </label>
+              <button id="cargarDemo" type="button" class="secundario">
+                Cargar datos de demostración
               </button>
+              <button id="restablecerDatos" type="button" class="peligro">Restablecer</button>
             </div>
           </article>
         </section>
-        <footer>
-          EcoRuta v2.2.0 · Universidad Internacional de las Americas · 2026
-        </footer>
+
+        <footer>EcoRuta v2.3.0 · Universidad Internacional de las Américas · 2026</footer>
       </main>
     </div>
-    <dialog id="dialogoConfirmacion">
+
+    <!-- Diálogo de confirmación genérica -->
+    <dialog id="dialogoConfirmacion" aria-labelledby="tituloConfirmacion">
       <form method="dialog">
         <h2 id="tituloConfirmacion">Confirmar</h2>
         <p id="textoConfirmacion"></p>
         <div class="acciones">
-          <button value="cancel" class="secundario">Cancelar</button
-          ><button value="confirm" class="peligro">Confirmar</button>
+          <button type="submit" value="cancel" class="secundario" formnovalidate>Cancelar</button>
+          <button type="submit" value="confirm" class="peligro">Confirmar</button>
         </div>
       </form>
     </dialog>
+
+    <!-- Diálogo de cancelación segura (envíos, clientes y rutas) -->
+    <dialog id="dialogoCancelacion" aria-labelledby="tituloCancelacion">
+      <form id="formCancelacion" method="dialog">
+        <h2 id="tituloCancelacion">Cancelar</h2>
+        <div id="resumenCancelacion" class="resumen-cancelacion"></div>
+        <div id="impactoCancelacion"></div>
+        <label for="motivoCancelacion">Motivo obligatorio *</label>
+        <textarea
+          id="motivoCancelacion"
+          required
+          minlength="10"
+          rows="3"
+          aria-describedby="ayudaMotivo"
+        ></textarea>
+        <small id="ayudaMotivo">
+          Explique el motivo en al menos 10 caracteres.
+          <strong id="contadorMotivo">0/10</strong>
+        </small>
+        <div class="acciones">
+          <button id="cerrarCancelacion" type="button" class="secundario">Cancelar</button>
+          <button id="confirmarCancelacion" type="submit" class="peligro" disabled>
+            Confirmar cancelación
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Contenido que se imprime (la aplicación se oculta al imprimir) -->
+    <section id="zonaImpresion" class="solo-impresion" aria-hidden="true"></section>
   </body>
 </html>
