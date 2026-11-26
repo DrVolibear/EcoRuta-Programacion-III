@@ -2,129 +2,32 @@ import { guardarEstado } from "../persistencia.js";
 import { moneda } from "../reglas.js";
 import { escapar, normalizarTexto, fechaLocal } from "../utilidades.js";
 let estado, avisar, actualizar, confirmar;
-export function iniciarClientes(e, a, u, c) {
-  estado = e;
-  avisar = a;
-  actualizar = u;
-  confirmar = c;
-  formCliente.addEventListener("submit", guardar);
-  buscarCliente.addEventListener("input", render);
-  listaClientes.addEventListener("click", accion);
-  cancelarCliente.addEventListener("click", limpiar);
-  cerrarHistorialCliente.addEventListener("click", () =>
-    dialogoHistorialCliente.close(),
-  );
-  render();
+const texto=v=>String(v??"").trim();
+const idNormal=v=>normalizarTexto(v).replace(/[^a-z0-9]/g,"");
+const correoNormal=v=>texto(v).toLowerCase();
+function errorCampo(campo,mensaje){campo.setCustomValidity(mensaje);campo.reportValidity();campo.focus();}
+function prepararValidacion(){
+  const campos=[identificacion,nombre,telefono,correo,direccion,codigoPostal,provincia];
+  campos.forEach(c=>{c.addEventListener("input",()=>c.setCustomValidity(""));c.addEventListener("change",()=>c.setCustomValidity(""));});
+  telefono.addEventListener("input",()=>{const d=telefono.value.replace(/\D/g,"").slice(0,8);telefono.value=d.length>4?`${d.slice(0,4)}-${d.slice(4)}`:d;});
 }
-function limpiar() {
-  formCliente.reset();
-  clienteId.value = "";
-  tituloCliente.textContent = "Nuevo cliente";
-  cancelarCliente.hidden = true;
-}
-function guardar(ev) {
-  ev.preventDefault();
-  const id = clienteId.value,
-    ident = identificacion.value.trim();
-  if (estado.clientes.some((c) => c.identificacion === ident && c.id !== id))
-    return avisar("La identificacion ya existe", true);
-  const nuevo = {
-    id: id || crypto.randomUUID(),
-    identificacion: ident,
-    nombre: nombre.value.trim(),
-    telefono: telefono.value.trim(),
-    correo: correo.value.trim(),
-    direccion: direccion.value.trim(),
-    codigoPostal: codigoPostal.value,
-    provincia: provincia.value,
-    activo: true,
-    fechaRegistro: new Date().toISOString(),
-  };
-  if (id) {
-    const anterior = estado.clientes.find((c) => c.id === id);
-    Object.assign(anterior, nuevo, {
-      activo: anterior.activo,
-      fechaRegistro: anterior.fechaRegistro,
-    });
-  } else estado.clientes.push(nuevo);
-  guardarEstado(estado);
-  limpiar();
-  render();
-  actualizar();
-  avisar("Cliente guardado");
-}
-async function accion(ev) {
-  const b = ev.target.closest("button[data-accion]");
-  if (!b) return;
-  const c = estado.clientes.find((x) => x.id === b.dataset.id);
-  if (!c) return;
-  if (b.dataset.accion === "editar") {
-    for (const k of [
-      "clienteId",
-      "identificacion",
-      "nombre",
-      "telefono",
-      "correo",
-      "direccion",
-      "codigoPostal",
-      "provincia",
-    ])
-      document.getElementById(k).value = k === "clienteId" ? c.id : c[k] || "";
-    tituloCliente.textContent = "Editar cliente";
-    cancelarCliente.hidden = false;
-    identificacion.focus();
-    return;
-  }
-  if (b.dataset.accion === "historial") {
-    const envios = estado.envios.filter(
-        (e) => e.clienteRemitente === c.id || e.clienteDestinatario === c.id,
-      ),
-      total = envios.reduce((s, e) => s + (e.tarifa?.total || 0), 0);
-    tituloHistorialCliente.textContent = `Historial de ${c.nombre}`;
-    contenidoHistorialCliente.innerHTML = `<p><strong>${envios.length}</strong> envios · Total facturado: <strong>${moneda(total)}</strong></p>${envios.map((e) => `<article class="cliente"><div><strong>${e.codigoGuia}</strong><p>${fechaLocal(e.fechaRegistro)} · ${moneda(e.tarifa?.total || 0)} · ${e.estado}</p></div></article>`).join("") || '<p class="vacio">Sin envios.</p>'}`;
-    dialogoHistorialCliente.showModal();
-    cerrarHistorialCliente.focus();
-    return;
-  }
-  const relacionados = estado.envios.some(
-    (e) => e.clienteRemitente === c.id || e.clienteDestinatario === c.id,
-  );
-  if (b.dataset.accion === "estado") {
-    c.activo = !c.activo;
-    guardarEstado(estado);
-    render();
-    actualizar();
-    avisar(c.activo ? "Cliente activado" : "Cliente inactivado");
-    return;
-  }
-  if (b.dataset.accion === "eliminar") {
-    if (relacionados)
-      return avisar(
-        "No se puede eliminar; marque el cliente como inactivo",
-        true,
-      );
-    if (!(await confirmar("Eliminar cliente", `¿Eliminar a ${c.nombre}?`)))
-      return;
-    estado.clientes = estado.clientes.filter((x) => x.id !== c.id);
-    guardarEstado(estado);
-    render();
-    actualizar();
-    avisar("Cliente eliminado");
-  }
-}
-export function render() {
-  const q = normalizarTexto(buscarCliente.value);
-  const lista = estado.clientes.filter((c) =>
-    normalizarTexto([c.nombre, c.identificacion, c.correo].join(" ")).includes(
-      q,
-    ),
-  );
-  listaClientes.innerHTML = lista.length
-    ? lista
-        .map(
-          (c) =>
-            `<article class="cliente ${c.activo ? "" : "estado-inactivo"}" data-seleccionable="true"><div><strong>${escapar(c.nombre)}</strong><p>${escapar(c.identificacion)} · ${escapar(c.telefono)} · ${escapar(c.correo)}</p><p>${escapar(c.provincia)} · CP ${escapar(c.codigoPostal || "")} · ${c.activo ? "Activo" : "Inactivo"}</p></div><div class="acciones"><button data-accion="historial" data-id="${c.id}">Historial</button><button data-accion="editar" data-id="${c.id}">Editar</button><button class="secundario" data-accion="estado" data-id="${c.id}">${c.activo ? "Inactivar" : "Activar"}</button><button class="peligro" data-accion="eliminar" data-id="${c.id}">Eliminar</button></div></article>`,
-        )
-        .join("")
-    : '<p class="vacio">No hay clientes.</p>';
-}
+export function iniciarClientes(e,a,u,c){estado=e;avisar=a;actualizar=u;confirmar=c;formCliente.addEventListener("submit",guardar);buscarCliente.addEventListener("input",render);listaClientes.addEventListener("click",accion);cancelarCliente.addEventListener("click",limpiar);cerrarHistorialCliente.addEventListener("click",()=>dialogoHistorialCliente.close());prepararValidacion();render();}
+function limpiar(){formCliente.reset();formCliente.classList.remove("mostrar-errores");clienteId.value="";tituloCliente.textContent="Nuevo cliente";cancelarCliente.hidden=true;[...formCliente.elements].forEach(x=>x.setCustomValidity?.(""));}
+function guardar(ev){ev.preventDefault();formCliente.classList.add("mostrar-errores");const id=clienteId.value;const d={identificacion:texto(identificacion.value),nombre:texto(nombre.value),telefono:texto(telefono.value),correo:correoNormal(correo.value),direccion:texto(direccion.value),codigoPostal:texto(codigoPostal.value),provincia:texto(provincia.value)};
+  for(const [campo,el,msg] of [[d.identificacion,identificacion,"La identificacion es obligatoria y no puede contener solo espacios."],[d.nombre,nombre,"El nombre es obligatorio y no puede contener solo espacios."],[d.direccion,direccion,"La direccion es obligatoria y no puede contener solo espacios."]]) if(!campo)return errorCampo(el,msg);
+  if(!/^\d{4}-\d{4}$/.test(d.telefono))return errorCampo(telefono,"Ingrese un telefono valido con el formato 8888-8888.");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@.]+$/.test(d.correo))return errorCampo(correo,"Ingrese un correo valido, sin espacios ni puntos al final.");
+  if(!/^\d{5}$/.test(d.codigoPostal))return errorCampo(codigoPostal,"Ingrese un codigo postal valido de exactamente 5 digitos.");
+  if(!d.provincia)return errorCampo(provincia,"Seleccione una provincia.");
+  if(estado.clientes.some(c=>idNormal(c.identificacion)===idNormal(d.identificacion)&&c.id!==id))return avisar("La identificacion ya existe",true);
+  if(estado.clientes.some(c=>correoNormal(c.correo)===d.correo&&c.id!==id))return avisar("El correo ya esta registrado",true);
+  if(id){const anterior=estado.clientes.find(c=>c.id===id);Object.assign(anterior,d,{activo:anterior.activo,fechaRegistro:anterior.fechaRegistro});}
+  else estado.clientes.push({id:crypto.randomUUID(),...d,activo:true,estado:"activo",fechaRegistro:new Date().toISOString()});
+  guardarEstado(estado);limpiar();render();actualizar();avisar("Cliente guardado");}
+async function accion(ev){const b=ev.target.closest("button[data-accion]");if(!b)return;const c=estado.clientes.find(x=>x.id===b.dataset.id);if(!c)return;
+ if(b.dataset.accion==="editar"){for(const k of ["clienteId","identificacion","nombre","telefono","correo","direccion","codigoPostal","provincia"])document.getElementById(k).value=k==="clienteId"?c.id:c[k]||"";tituloCliente.textContent="Editar cliente";cancelarCliente.hidden=false;identificacion.focus();return;}
+ if(b.dataset.accion==="historial"){const envios=estado.envios.filter(e=>e.clienteRemitente===c.id||e.clienteDestinatario===c.id),total=envios.reduce((s,e)=>s+(e.tarifa?.total||0),0);tituloHistorialCliente.textContent=`Historial de envios de ${c.nombre}`;contenidoHistorialCliente.innerHTML=`<p><strong>${envios.length}</strong> envios · Total facturado: <strong>${moneda(total)}</strong></p>${envios.map(e=>`<article class="cliente"><div><strong>${escapar(e.codigoGuia)}</strong><p>${fechaLocal(e.fechaRegistro)} · ${moneda(e.tarifa?.total||0)} · ${escapar(e.estado)}</p></div></article>`).join("")||'<p class="vacio">Sin envios.</p>'}`;dialogoHistorialCliente.showModal();cerrarHistorialCliente.focus();return;}
+ const relacionados=estado.envios.filter(e=>e.clienteRemitente===c.id||e.clienteDestinatario===c.id);
+ if(b.dataset.accion==="estado"){c.activo=!c.activo;c.estado=c.activo?"activo":"inactivo";guardarEstado(estado);render();actualizar();avisar(c.activo?"Cliente activado":"Cliente inactivado");return;}
+ if(b.dataset.accion==="eliminar"){if(relacionados.some(e=>!["entregado","devuelto","cancelado"].includes(e.estado)))return avisar(`No se puede cancelar: el cliente tiene ${relacionados.length} envios asociados; marque el cliente como inactivo.`,true);const impacto=`${c.nombre||c.identificacion} · ID ${c.identificacion} · ${c.activo?"Activo":"Inactivo"} · ${relacionados.length} envios asociados.`;if(!(await confirmar("Cancelar cliente",`${impacto} El registro se conservara para auditoria.`)))return;c.activo=false;c.estado="cancelado";c.fechaCancelacion=new Date().toISOString();guardarEstado(estado);render();actualizar();avisar("Cliente cancelado; se conservo la auditoria");}}
+export function render(){const q=normalizarTexto(buscarCliente.value),lista=estado.clientes.filter(c=>normalizarTexto([c.nombre,c.identificacion,c.correo].join(" ")).includes(q));listaClientes.innerHTML=lista.length?lista.map(c=>`<article class="cliente ${c.activo?"":"estado-inactivo"}" data-seleccionable="true"><div><strong>${escapar(c.nombre||"Cliente sin nombre")}</strong><p>${escapar(c.identificacion)} · ${escapar(c.telefono)} · ${escapar(c.correo)}</p><p>${escapar(c.provincia)} · CP ${escapar(c.codigoPostal||"")} · ${c.estado==="cancelado"?"Cancelado":c.activo?"Activo":"Inactivo"}</p></div><div class="acciones"><button data-accion="historial" data-id="${c.id}">Historial de envios</button><button data-accion="editar" data-id="${c.id}" ${c.estado==="cancelado"?"disabled":""}>Editar</button><button class="secundario" data-accion="estado" data-id="${c.id}" ${c.estado==="cancelado"?"disabled":""}>${c.activo?"Inactivar":"Activar"}</button><button class="peligro" data-accion="eliminar" data-id="${c.id}" ${c.estado==="cancelado"?"disabled":""}>Cancelar</button></div></article>`).join(""):`<p class="vacio">${q?"No se encontraron clientes que coincidan con la busqueda.":"No hay clientes registrados."}</p>`;}

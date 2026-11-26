@@ -16,6 +16,7 @@ export const diasDesde = (fecha) =>
   Math.max(0, Math.floor((Date.now() - new Date(fecha).getTime()) / 86400000));
 export const normalizarTexto = (texto) =>
   String(texto ?? "")
+    .trim()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();

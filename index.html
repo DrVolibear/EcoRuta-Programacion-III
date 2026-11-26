@@ -52,7 +52,7 @@
             <small>Sistema interno</small
             ><span id="tituloVista">Panel general</span>
           </div>
-          <div class="busqueda-global"><label class="sr-only" for="busquedaGlobal">Buscar en EcoRuta</label><input id="busquedaGlobal" type="search" placeholder="Buscar guia, cliente o ruta" autocomplete="off"><div id="resultadosGlobales" class="resultados-globales" hidden></div></div><span class="insignia">EcoRuta v2.0.2</span>
+          <div class="busqueda-global"><label class="sr-only" for="busquedaGlobal">Buscar en EcoRuta</label><input id="busquedaGlobal" type="search" placeholder="Buscar guia, cliente o ruta" autocomplete="off"><div id="resultadosGlobales" class="resultados-globales" hidden></div></div><span class="insignia">EcoRuta v2.2.0</span>
         </header>
         <div
           id="toasts"
@@ -140,44 +140,44 @@
               <form id="formCliente">
                 <input id="clienteId" type="hidden" /><label
                   for="identificacion"
-                  >Identificacion</label
+                  >Identificacion *</label
                 ><input
                   id="identificacion"
                   required
                   maxlength="20"
                   pattern="[0-9-]{7,20}"
-                /><label for="nombre">Nombre</label
+                /><label for="nombre">Nombre *</label
                 ><input
                   id="nombre"
                   required
                   maxlength="80"
                   autocomplete="name"
-                /><label for="telefono">Telefono</label
+                /><label for="telefono">Telefono *</label
                 ><input
                   id="telefono"
                   required
                   pattern="[0-9]{4}-[0-9]{4}"
                   placeholder="8888-8888"
                   autocomplete="tel"
-                /><label for="correo">Correo</label
+                /><label for="correo">Correo *</label
                 ><input
                   id="correo"
                   type="email"
                   required
                   autocomplete="email"
-                /><label for="direccion">Direccion</label
+                /><label for="direccion">Direccion *</label
                 ><input
                   id="direccion"
                   required
                   autocomplete="street-address"
-                /><label for="codigoPostal">Codigo postal</label
+                /><label for="codigoPostal">Codigo postal *</label
                 ><input
                   id="codigoPostal"
                   required
                   pattern="[0-9]{5}"
                   maxlength="5"
                   inputmode="numeric"
-                /><label for="provincia">Provincia</label
+                /><label for="provincia">Provincia *</label
                 ><select id="provincia" required>
                   <option value="">Seleccione</option>
                   <option>San Jose</option>
@@ -215,7 +215,7 @@
           <dialog id="dialogoHistorialCliente">
             <article>
               <header class="fila">
-                <h2 id="tituloHistorialCliente">Historial</h2>
+                <h2 id="tituloHistorialCliente">Historial de envios</h2>
                 <button id="cerrarHistorialCliente" class="secundario">
                   Cerrar
                 </button>
@@ -430,16 +430,18 @@
           </dialog>
           <dialog id="dialogoEliminarEnvio">
             <form id="formEliminarEnvio" method="dialog">
-              <h2>Eliminar envio</h2>
+              <h2>Cancelar envio</h2><div id="resumenEliminacionEnvio" class="alerta"></div>
               <label for="motivoEliminacion">Motivo obligatorio</label
               ><textarea
                 id="motivoEliminacion"
                 required
-                minlength="5"
+                aria-describedby="ayudaMotivoEliminacion"
+                minlength="10"
               ></textarea>
+              <small id="ayudaMotivoEliminacion">Explique el motivo en al menos 10 caracteres. <strong id="contadorMotivoEliminacion">0/10</strong></small>
               <div class="acciones">
                 <button value="cancel" class="secundario">Cancelar</button
-                ><button value="confirm" class="peligro">Eliminar</button>
+                ><button id="confirmarEliminacionEnvio" value="confirm" class="peligro" disabled>Cancelar envio</button>
               </div>
             </form>
           </dialog>
@@ -480,7 +482,7 @@
                   type="number"
                   min="1"
                   required
-                /><label for="rutaCapacidadCantidad"
+                /><small id="ayudaCapacidadRuta" class="texto-ayuda">Seleccione una modalidad para cargar su capacidad maxima.</small><label for="rutaCapacidadCantidad"
                   >Capacidad de paquetes</label
                 ><input
                   id="rutaCapacidadCantidad"
@@ -616,7 +618,7 @@
           </article>
         </section>
         <footer>
-          EcoRuta v2.0.2 · Universidad Internacional de las Americas · 2026
+          EcoRuta v2.2.0 · Universidad Internacional de las Americas · 2026
         </footer>
       </main>
     </div>

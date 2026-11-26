@@ -20,7 +20,8 @@ let estado,
   orden = { campo: "fecha", direccion: "desc" },
   guiaDetalle = "",
   guiaEliminar = "",
-  guiaOrigenReenvio = "";
+  guiaOrigenReenvio = "",
+    firmaComparacion = "";
 const $ = (s) => document.querySelector(s),
   suc = (c) => catalogo.sucursales.find((s) => s.codigo === c),
   mod = (c) => catalogo.modalidades.find((m) => m.codigo === c),
@@ -32,6 +33,8 @@ export function iniciarEnvios(e, c, a, u, co) {
   actualizar = u;
   confirmar = co;
   formEnvio.addEventListener("submit", comparar);
+    formEnvio.addEventListener("input", invalidarComparacion);
+    formEnvio.addEventListener("change", invalidarComparacion);
   comparacion.addEventListener("click", (ev) => {
     const b = ev.target.closest("button[data-opcion]");
     if (b) confirmarOpcion(+b.dataset.opcion);
@@ -85,6 +88,7 @@ export function iniciarEnvios(e, c, a, u, co) {
     formSeguimiento.requestSubmit();
   };
   formEliminarEnvio.addEventListener("submit", eliminarConfirmado);
+    motivoEliminacion.addEventListener("input", actualizarMotivo);
   buscarRemitente.addEventListener("input", () =>
     cargarClientes("remitente", buscarRemitente.value),
   );
@@ -138,7 +142,7 @@ export function actualizarSelectores() {
       .join("");
   filtroEstadoEnvio.innerHTML =
     '<option value="">Todos</option>' +
-    ESTADOS.map((e) => `<option value="${e}">${nombreEstado(e)}</option>`).join(
+    [...ESTADOS,"cancelado"].filter((v,i,a)=>a.indexOf(v)===i).map((e) => `<option value="${e}">${nombreEstado(e)}</option>`).join(
       "",
     );
 }
@@ -156,6 +160,9 @@ function datosFormulario() {
     urgente: urgente.checked,
   };
 }
+function firmaActual(){const d=datosFormulario();return JSON.stringify({...d,responsableAutorizacion:(d.responsableAutorizacion||"").trim()})}
+function invalidarComparacion(){if(!opciones.length)return;opciones=[];firmaComparacion="";comparacion.innerHTML='<p class="vacio alerta">Los datos cambiaron. Vuelva a comparar las modalidades.</p>'}
+function actualizarMotivo(){const n=motivoEliminacion.value.trim().length;contadorMotivoEliminacion.textContent=`${Math.min(n,10)}/10`;confirmarEliminacionEnvio.disabled=n<10}
 function comparar(ev) {
   ev.preventDefault();
   const d = datosFormulario(),
@@ -211,19 +218,23 @@ function comparar(ev) {
       destino: d.destino,
     }))
     .sort((a, b) => a.emisiones - b.emisiones);
+  firmaComparacion = firmaActual();
   comparacion.innerHTML = opciones.length
-    ? `<p><strong>Peso facturable:</strong> ${paquete.pesoFacturable} kg · <strong>Distancia:</strong> ${distancia} km</p>` +
+    ? `<p><strong>Peso real:</strong> ${paquete.pesoReal} kg · <strong>Peso volumetrico:</strong> ${paquete.pesoVolumetrico} kg · <strong>Peso facturable:</strong> ${paquete.pesoFacturable} kg · <strong>Distancia:</strong> ${distancia} km</p>` +
       opciones
         .map(
           (o, i) =>
-            `<article class="opcion ${i === 0 ? "recomendada" : ""}"><header><strong>${o.modalidad.nombre}</strong><span>${i === 0 ? "Menor emision" : ""}</span></header><dl><dt>Base</dt><dd>${moneda(o.tarifa.base)}</dd><dt>Peso</dt><dd>${moneda(o.tarifa.peso)}</dd><dt>Distancia</dt><dd>${moneda(o.tarifa.distancia)}</dd><dt>Recargos</dt><dd>${moneda(Object.values(o.tarifa.recargos).reduce((a, b) => a + b, 0))}</dd><dt>Descuento</dt><dd>${moneda(o.tarifa.descuento)}</dd><dt>Total</dt><dd>${moneda(o.tarifa.total)}</dd><dt>Emisiones</dt><dd>${o.emisiones} kg CO2e</dd><dt>Entrega</dt><dd>${Math.max(1, Math.ceil(o.distancia / o.modalidad.velocidadKmH))} h</dd></dl><button data-opcion="${i}">${guiaEdicion.value ? "Guardar correccion" : "Elegir y registrar"}</button></article>`,
+            `<article class="opcion ${i === 0 ? "recomendada" : ""}"><header><strong>${o.modalidad.nombre}</strong><span>${i === 0 ? "Menor emision" : ""}</span></header><dl><dt>Base</dt><dd>${moneda(o.tarifa.base)}</dd><dt>Peso</dt><dd>${moneda(o.tarifa.peso)}</dd><dt>Distancia</dt><dd>${moneda(o.tarifa.distancia)}</dd>${Object.entries(o.tarifa.recargos).map(([k,v])=>`<dt>Recargo ${k}</dt><dd>${moneda(v)}${v?` (${Math.round((catalogo.recargos[k]||0)*100)}%)`:""}</dd>`).join("")}<dt>Descuento</dt><dd>${moneda(o.tarifa.descuento)}</dd><dt>Total</dt><dd>${moneda(o.tarifa.total)}</dd><dt>Emisiones</dt><dd>${o.emisiones} kg CO2e</dd><dt>Entrega</dt><dd>${Math.max(1, Math.ceil(o.distancia / o.modalidad.velocidadKmH))} h</dd></dl><button data-opcion="${i}">${guiaEdicion.value ? "Guardar correccion" : "Elegir y registrar"}</button></article>`,
         )
         .join("")
-    : '<p class="vacio">No existe modalidad viable.</p>';
+    : `<p class="vacio alerta error">${paquete.contenido === "frio" ? "No existe una modalidad refrigerada compatible con el peso, la distancia y la sucursal de origen." : "No existe modalidad viable para el peso, dimensiones, distancia y sucursal seleccionados."}</p>`;
 }
 function confirmarOpcion(i) {
   const o = opciones[i];
   if (!o) return;
+  if(!formEnvio.checkValidity()){formEnvio.reportValidity();return avisar("Corrija los datos del formulario antes de registrar",true)}
+  const errores=validarEnvioFormulario(datosFormulario(),catalogo.reglas);if(errores.length)return avisar(errores[0],true);
+  if(firmaComparacion!==firmaActual())return avisar("Los datos cambiaron. Compare nuevamente las modalidades antes de registrar.",true);
   const existente = estado.envios.find(
     (e) => e.codigoGuia === guiaEdicion.value,
   );
@@ -300,7 +311,8 @@ function insertarOActualizarTrasRegistro() {
 function cancelarEdicion() {
   formEnvio.reset();
   guiaEdicion.value = "";
-  guiaOrigenReenvio = "";
+  guiaOrigenReenvio = "",
+    firmaComparacion = "";
   cancelarEdicionEnvio.hidden = true;
   btnComparar.textContent = "Comparar modalidades";
   comparacion.innerHTML = '<p class="vacio">Complete el formulario.</p>';
@@ -370,7 +382,7 @@ function accionTabla(ev) {
 function eliminarConfirmado(ev) {
   if (ev.submitter?.value !== "confirm") return;
   ev.preventDefault();
-  if (motivoEliminacion.value.trim().length < 5)
+  if (motivoEliminacion.value.trim().length < 10)
     return motivoEliminacion.reportValidity();
   const e = estado.envios.find((x) => x.codigoGuia === guiaEliminar);
   estado.enviosEliminados.push({
@@ -378,14 +390,21 @@ function eliminarConfirmado(ev) {
     motivoEliminacion: motivoEliminacion.value.trim(),
     fechaEliminacion: new Date().toISOString(),
   });
+  estado.rutas.forEach((ruta) => {
+    ruta.envios = (ruta.envios || []).filter((guia) => guia !== guiaEliminar);
+  });
   estado.envios = estado.envios.filter((x) => x.codigoGuia !== guiaEliminar);
   guardarEstado(estado);
   dialogoEliminarEnvio.close();
   renderEnvios();
   actualizar();
-  avisar("Envio eliminado; la guia no se reutilizara");
+  document.dispatchEvent(new Event("inventarioActualizado"));
+  avisar("Envio cancelado; la guia se conserva para auditoria");
 }
-function lista() {
+function sincronizarFechas(){filtroFechaHasta.min=filtroFechaDesde.value||"";filtroFechaDesde.max=filtroFechaHasta.value||"";}
+  function lista() {
+    sincronizarFechas();
+    if(filtroFechaDesde.value&&filtroFechaHasta.value&&filtroFechaHasta.value<filtroFechaDesde.value){avisar("Hasta no puede ser anterior a Desde",true);return [];}
   const q = normalizarTexto(buscarEnvio.value),
     desde = filtroFechaDesde.value
       ? new Date(filtroFechaDesde.value).getTime()
@@ -489,7 +508,7 @@ function detalle(e) {
       estado.clientes.find((c) => c.id === id)?.nombre || "No disponible",
     rec = Object.values(e.tarifa?.recargos || {}).reduce((a, b) => a + b, 0);
   tituloDetalleEnvio.textContent = e.codigoGuia;
-  contenidoDetalleEnvio.innerHTML = `<div class="detalle-envio-grid"><section class="detalle-envio-seccion"><h3>Personas</h3><p>Remitente: ${cli(e.clienteRemitente)}</p><p>Destinatario: ${cli(e.clienteDestinatario)}</p></section><section class="detalle-envio-seccion"><h3>Trayecto</h3><p>${suc(e.sucursalOrigen)?.nombre} → ${suc(e.sucursalDestino)?.nombre}</p><p>${e.distanciaKm} km</p></section><section class="detalle-envio-seccion"><h3>Paquete</h3><p>${e.contenido} · ${e.pesoFacturable} kg</p><p>${e.dimensiones.largo} × ${e.dimensiones.ancho} × ${e.dimensiones.alto} cm</p></section><section class="detalle-envio-seccion"><h3>Operacion</h3><p>${mod(e.modalidad)?.nombre}</p><p>${nombreEstado(e.estado)}</p><p>${e.emisionesKgCO2e} kg CO2e</p></section><section class="detalle-envio-seccion detalle-tarifa"><h3>Tarifa</h3><p>Base ${moneda(e.tarifa.base)} · Peso ${moneda(e.tarifa.peso)} · Distancia ${moneda(e.tarifa.distancia)} · Recargos ${moneda(rec)} · Descuento ${moneda(e.tarifa.descuento)}</p><p><strong>Total ${moneda(e.tarifa.total)}</strong></p></section></div>`;
+  contenidoDetalleEnvio.innerHTML = `<div class="detalle-envio-grid"><section class="detalle-envio-seccion"><h3>Personas</h3><p>Remitente: ${cli(e.clienteRemitente)}</p><p>Destinatario: ${cli(e.clienteDestinatario)}</p></section><section class="detalle-envio-seccion"><h3>Trayecto</h3><p>${suc(e.sucursalOrigen)?.nombre} → ${suc(e.sucursalDestino)?.nombre}</p><p>${e.distanciaKm} km</p></section><section class="detalle-envio-seccion"><h3>Paquete</h3><p>${e.contenido}</p><p>Peso real: ${e.pesoReal} kg</p><p>Peso volumetrico: ${e.pesoVolumetrico} kg</p><p>Peso facturable: ${e.pesoFacturable} kg</p><p>Largo × Ancho × Alto: ${e.dimensiones.largo} × ${e.dimensiones.ancho} × ${e.dimensiones.alto} cm</p>${e.envioOrigen?`<p>Guia original: <strong>${escapar(e.envioOrigen)}</strong></p>`:""}${estado.envios.find(x=>x.envioOrigen===e.codigoGuia)?`<p>Reenvio asociado: <strong>${escapar(estado.envios.find(x=>x.envioOrigen===e.codigoGuia).codigoGuia)}</strong></p>`:""}</section><section class="detalle-envio-seccion"><h3>Operacion</h3><p>${mod(e.modalidad)?.nombre}</p><p>${nombreEstado(e.estado)}</p><p>${e.emisionesKgCO2e} kg CO2e</p></section><section class="detalle-envio-seccion detalle-tarifa"><h3>Tarifa</h3><p>Base ${moneda(e.tarifa.base)} · Peso facturable ${moneda(e.tarifa.peso)} · Distancia ${moneda(e.tarifa.distancia)} · Recargos ${moneda(rec)} · Descuento ${moneda(e.tarifa.descuento)}</p><p><strong>Total ${moneda(e.tarifa.total)}</strong></p></section></div>`;
   dialogoEnvio.showModal();
   cerrarDetalleEnvio.focus();
 }
